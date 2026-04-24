@@ -62,7 +62,11 @@ export default function AdminPanel({ onExit }) {
     } else {
       const cat = data.find(d => d.key === 'categories');
       const prc = data.find(d => d.key === 'prices');
-      if (cat) setCategoriesData(cat.content);
+      if (cat && cat.content) {
+        // Очищаем пути для корректного отображения превью на GitHub Pages
+        const sanitized = JSON.parse(JSON.stringify(cat.content).replace(/"img":"\//g, '"img":"'));
+        setCategoriesData(sanitized);
+      }
       if (prc) setPricesData(prc.content);
     }
     setLoading(false);
