@@ -3,7 +3,7 @@ import os
 
 input_path = r"C:\Users\asd\..gemini\antigravity\brain\17ab2b79-4648-4664-8eca-336a1c821038\media__1777028808064.png"
 # Correcting the path (it was missing a dot or had extra dots in my thought, let's use the absolute one from list_dir)
-input_path = r"C:\Users\asd\.gemini\antigravity\brain\17ab2b79-4648-4664-8eca-336a1c821038\media__1777028808064.png"
+input_path = r"C:\Users\asd\.gemini\antigravity\brain\17ab2b79-4648-4664-8eca-336a1c821038\media__1777029160164.png"
 output_path = r"e:\ustoy\public\favicon.png"
 
 img = Image.open(input_path)
