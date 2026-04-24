@@ -128,7 +128,7 @@ export default function AdminPanel({ onExit }) {
         name: 'Новое название',
         desc: '',
         price: '0 руб',
-        img: '/cat_truck.png'
+        img: 'cat_truck.png'
       });
       return newData;
     });

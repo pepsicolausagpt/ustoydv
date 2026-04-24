@@ -11,22 +11,22 @@ export const categoriesParams = [
     id: 'lumber', 
     title: 'Пиломатериалы и Лесопилка', 
     desc: 'Брус, доска, горбыль. Услуги собственной пилорамы. Основное направление нашей компании.', 
-    img: '/cat_lumber.png',
+    img: 'cat_lumber.png',
     isPrimary: true,
     prices: [
-      { id: 'doska',   name: 'Доска обрезная',    desc: 'Для строительства домов, бань, сельхоз построек, опалубки.', price: 'от 18 000 руб/м³', img: '/item_doska.png' },
-      { id: 'brus',    name: 'Брус строительный', desc: 'Для строительства домов, бань, сельхоз построек.',           price: 'от 18 000 руб/м³', img: '/item_brus.png' },
-      { id: 'brusok',  name: 'Брусок',             desc: 'Для отделочных работ, обрешётки и каркасов.',              price: 'от 18 000 руб/м³', img: '/item_brus.png' },
-      { id: 'gorbyl',  name: 'Горбыль Ель (пачка)', desc: 'Отходы лесопилки (пакет 2 куб.м).',                      price: '2 000 руб/пак', img: '/item_gorbyl.png' },
-      { id: 'sawdust', name: 'Опилки чистые (ель)', desc: 'Используют в качестве наполнителя, утеплителя, подстилки.', price: '300 руб/м³',   img: '/item_sawdust.png' },
-      { id: 'sawmill', name: 'Услуги пилорамы',    desc: 'Распил круглого леса. Длина до 6 м.',                      price: 'от 700 руб/м³', img: '/item_sawmill.png' }
+      { id: 'doska',   name: 'Доска обрезная',    desc: 'Для строительства домов, бань, сельхоз построек, опалубки.', price: 'от 18 000 руб/м³', img: 'item_doska.png' },
+      { id: 'brus',    name: 'Брус строительный', desc: 'Для строительства домов, бань, сельхоз построек.',           price: 'от 18 000 руб/м³', img: 'item_brus.png' },
+      { id: 'brusok',  name: 'Брусок',             desc: 'Для отделочных работ, обрешётки и каркасов.',              price: 'от 18 000 руб/м³', img: 'item_brus.png' },
+      { id: 'gorbyl',  name: 'Горбыль Ель (пачка)', desc: 'Отходы лесопилки (пакет 2 куб.м).',                      price: '2 000 руб/пак', img: 'item_gorbyl.png' },
+      { id: 'sawdust', name: 'Опилки чистые (ель)', desc: 'Используют в качестве наполнителя, утеплителя, подстилки.', price: '300 руб/м³',   img: 'item_sawdust.png' },
+      { id: 'sawmill', name: 'Услуги пилорамы',    desc: 'Распил круглого леса. Длина до 6 м.',                      price: 'от 700 руб/м³', img: 'item_sawmill.png' }
     ]
   },
   { 
     id: 'materials', 
     title: 'Сыпучие Материалы', 
     desc: 'Песок, щебень, ПГС, отсев, сланец и смеси. Доставка от 1 куба, погрузка в ваш транспорт.', 
-    img: '/mat_mix.png',
+    img: 'mat_mix.png',
     isPrimary: false,
     priceNote: 'Цены самовывозом. Доставка в радиусе 10 км от склада (п. Березовка, Федоровское ш. 8/1). Дата прайса: 24.04.2026',
     prices: [
@@ -45,7 +45,7 @@ export const categoriesParams = [
     id: 'soil', 
     title: 'Грунт и Удобрения', 
     desc: 'Растительный грунт, опилки, перегной. Для сада, огорода и благоустройства.', 
-    img: '/mat_soil.png',
+    img: 'mat_soil.png',
     isPrimary: false,
     priceNote: 'Цены самовывозом за м³. Дата прайса: 24.04.2026',
     prices: [
@@ -59,7 +59,7 @@ export const categoriesParams = [
     id: 'coal', 
     title: 'Уголь', 
     desc: 'Уголь различных марок для печного и котельного отопления. Навалом и в мешках.', 
-    img: '/cat_coal.png',
+    img: 'cat_coal.png',
     isPrimary: false,
     priceNote: 'Цена за тонну самовывозом. Дата прайса: 24.04.2026',
     prices: [
@@ -73,7 +73,7 @@ export const categoriesParams = [
     id: 'firewood', 
     title: 'Дрова и Горбыль', 
     desc: 'Горбыль пачками хвойных и лиственных пород. Удобны для растопки и отопления.', 
-    img: '/item_gorbyl_new.png',
+    img: 'item_gorbyl_new.png',
     isPrimary: false,
     priceNote: 'Цены самовывозом за складской м³. Дата прайса: 24.04.2026',
     prices: [
@@ -86,7 +86,7 @@ export const categoriesParams = [
     id: 'machinery', 
     title: 'Аренда спецтехники и Услуги', 
     desc: 'Самосвалы 3 и 7 тонн, экскаватор. Вывоз мусора, грунта, снега. Разнорабочие.', 
-    img: '/cat_truck.png',
+    img: 'cat_truck.png',
     isPrimary: false,
     prices: [
       { id: 'dump3',      name: 'Аренда самосвала 3 тонны',     desc: 'Для узких дорог и малых объёмов.',         price: '2 000 руб/час' },

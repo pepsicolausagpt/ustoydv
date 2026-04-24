@@ -350,7 +350,7 @@ const HomeView = ({ categories, onSelectCategory, onPriceClick }) => {
   return (
     <>
       <section className="hero">
-        <img src="/bg_hero_lumber.png" alt="Производство пиломатериалов" className="hero-bg" onError={handleImgError} />
+        <img src="bg_hero_lumber.png" alt="Производство пиломатериалов" className="hero-bg" onError={handleImgError} />
         <div className="hero-overlay" />
         <div className="hero-content">
           <h1>ПРОИЗВОДСТВО ПИЛОМАТЕРИАЛОВ<br />В ХАБАРОВСКЕ</h1>
