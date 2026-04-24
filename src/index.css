@@ -600,16 +600,54 @@ details[open] .requisites-title { color: var(--text-main); border-bottom: 1px so
 }
 
 @media (max-width: 900px) {
-  .cd-header { flex-direction: column; }
-  .featured-card { flex-direction: column; text-align: center; }
+  /* Header */
+  header { padding: 0 20px; }
+  .header-contacts { display: none; }
+  
+  /* Hero */
+  .hero { padding: 60px 30px; margin: 88px 16px 20px; min-height: auto; }
+  .hero h1 { font-size: 48px; letter-spacing: -1px; }
+  .hero p { font-size: 18px; margin-bottom: 30px; }
+  .hero-buttons { flex-direction: column; align-items: stretch; width: 100%; }
+  .hero-buttons button { width: 100%; justify-content: center; }
+  .btn-outline { justify-content: center; }
+  
+  /* Sections */
+  .container { padding: 0 20px; }
+  .section-title { font-size: 32px; margin-bottom: 24px; }
+  .section-title--secondary { margin-top: 40px; }
+  
+  /* Feature Grid */
+  .features-grid { grid-template-columns: 1fr; gap: 32px; }
+  
+  /* Category Detail */
+  .cd-header { flex-direction: column; gap: 30px; margin-bottom: 40px; }
+  .cd-info h1 { font-size: 32px; }
+  
+  /* Featured Card */
+  .featured-card { flex-direction: column; text-align: center; padding: 30px 20px; }
+  .fc-image img { width: 200px; height: 200px; }
   .fc-buttons { justify-content: center; }
-  .hero-buttons { flex-direction: column; align-items: flex-start; }
+  .fc-content h2 { font-size: 28px; }
+  
   .price-table { font-size: var(--text-xs); }
 }
+
 @media (max-width: 600px) {
+  /* Header extra small */
+  header { height: auto; padding: 16px; flex-direction: column; gap: 12px; }
+  .nav-links { gap: 16px; flex-wrap: wrap; justify-content: center; }
+  
+  .hero { margin-top: 100px; padding: 40px 20px; }
+  .hero h1 { font-size: 36px; }
+  .hero p { font-size: 16px; }
+  
   .price-list-item { flex-direction: column; align-items: flex-start; gap: 12px; }
-  .price-view { padding: 100px 16px 60px; }
+  .price-view { padding: 120px 16px 60px; }
   .pt-note-col, .pt-note { display: none; }
+  
+  .cd-cta-block { padding: 30px 20px; }
+  .cd-cta-block h2 { font-size: 24px; }
 }
 
 /* ══════════════════════════════════════════
