@@ -296,6 +296,7 @@ const ContactsSection = () => (
             height="100%"
             frameBorder="0"
             allowFullScreen
+            loading="lazy"
             className="contacts-map-iframe"
           />
         </div>
@@ -370,7 +371,7 @@ const HomeView = ({ categories, onSelectCategory, onPriceClick }) => {
       <section className="catalog-section container" id="catalog">
         <div className="featured-card" onClick={() => onSelectCategory(primaryCat)}>
           <div className="fc-image">
-            <img src={primaryCat.img} alt={primaryCat.title} onError={handleImgError} />
+            <img src={primaryCat.img} alt={primaryCat.title} loading="lazy" onError={handleImgError} />
           </div>
           <div className="fc-content">
             <h2>{primaryCat.title}</h2>
@@ -383,7 +384,7 @@ const HomeView = ({ categories, onSelectCategory, onPriceClick }) => {
         <div className="grid">
           {secondaryCats.map(cat => (
             <div key={cat.id} className="card" onClick={() => onSelectCategory(cat)}>
-              <img src={cat.img} alt={cat.title} className="card-img" onError={handleImgError} />
+              <img src={cat.img} alt={cat.title} className="card-img" loading="lazy" onError={handleImgError} />
               <h3 className="card-title">{cat.title}</h3>
               <p className="card-desc">{cat.desc}</p>
               <button className="card-btn">открыть</button>
@@ -568,17 +569,19 @@ const App = () => {
     <>
       <Header onLogoClick={handleLogoClick} onPriceClick={handleShowPrice} />
 
-      {showPrice ? (
-        <PriceView onBack={handleBack} priceData={sitePrices} />
-      ) : activeCategory ? (
-        <CategoryDetail category={activeCategory} onBack={handleBack} />
-      ) : (
-        <HomeView
-          categories={siteCategories}
-          onSelectCategory={handleSelectCategory}
-          onPriceClick={handleShowPrice}
-        />
-      )}
+      <main>
+        {showPrice ? (
+          <PriceView onBack={handleBack} priceData={sitePrices} />
+        ) : activeCategory ? (
+          <CategoryDetail category={activeCategory} onBack={handleBack} />
+        ) : (
+          <HomeView
+            categories={siteCategories}
+            onSelectCategory={handleSelectCategory}
+            onPriceClick={handleShowPrice}
+          />
+        )}
+      </main>
 
       <Footer />
 
