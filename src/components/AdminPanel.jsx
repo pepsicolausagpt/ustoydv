@@ -106,6 +106,14 @@ export default function AdminPanel({ onExit }) {
     });
   };
 
+  const updateCategoryField = (catIdx, field, value) => {
+    setCategoriesData(prev => {
+      const newData = [...prev];
+      newData[catIdx] = { ...newData[catIdx], [field]: value };
+      return newData;
+    });
+  };
+
   const removeCategoryItem = (catIdx, itemIdx) => {
     if (confirmDelete && confirmDelete.catIdx === catIdx && confirmDelete.itemIdx === itemIdx) {
       if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
@@ -155,7 +163,11 @@ export default function AdminPanel({ onExit }) {
 
     const { data: { publicUrl } } = supabase.storage.from('site-images').getPublicUrl(filePath);
     
-    updateCategoryItem(catIdx, itemIdx, 'img', publicUrl);
+    if (itemIdx !== null && itemIdx !== undefined) {
+      updateCategoryItem(catIdx, itemIdx, 'img', publicUrl);
+    } else {
+      updateCategoryField(catIdx, 'img', publicUrl);
+    }
     setLoading(false);
   };
 
@@ -254,8 +266,20 @@ export default function AdminPanel({ onExit }) {
           <section style={{ background: '#fff', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
             <h2 style={{ marginBottom: '24px' }}>Редактирование Каталога (Главная страница)</h2>
             {categoriesData?.map((cat, catIdx) => (
-              <div key={cat.id} style={{ marginBottom: '32px' }}>
-                <h3 style={{ borderBottom: '1px solid #eee', paddingBottom: '8px', color: '#333' }}>{cat.title}</h3>
+              <div key={cat.id} style={{ marginBottom: '40px', borderBottom: catIdx < categoriesData.length - 1 ? '2px solid #eee' : 'none', paddingBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                  <h3 style={{ margin: 0, color: '#333', fontSize: '24px' }}>{cat.title}</h3>
+                  <div style={{ background: '#f8fafc', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <div style={{ fontSize: '14px', fontWeight: 'bold' }}>Главное фото раздела:</div>
+                    {cat.img && <img src={cat.img} alt="category" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '50%' }} />}
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={(e) => uploadImage(e.target.files[0], catIdx, null)}
+                      style={{ fontSize: '12px' }}
+                    />
+                  </div>
+                </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px', marginTop: '16px' }}>
                   {cat.prices.map((item, itemIdx) => (
                     <div key={item.id} style={{ border: '1px solid #e2e8f0', padding: '16px', borderRadius: '8px', position: 'relative' }}>
