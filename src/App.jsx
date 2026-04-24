@@ -486,7 +486,11 @@ const App = () => {
       if (data && !error) {
         const cat = data.find(d => d.key === 'categories');
         const prc = data.find(d => d.key === 'prices');
-        if (cat && cat.content) setSiteCategories(cat.content);
+        if (cat && cat.content) {
+          // Удаляем ведущий слеш из путей картинок для GitHub Pages
+          const sanitized = JSON.parse(JSON.stringify(cat.content).replace(/"img":"\//g, '"img":"'));
+          setSiteCategories(sanitized);
+        }
         if (prc && prc.content) setSitePrices(prc.content);
       }
     };
