@@ -144,14 +144,14 @@ export default function AdminPanel({ onExit }) {
   const handleSave = async () => {
     setIsSaving(true);
     setSaveMessage('');
-    const { error: catError } = await supabase.from('site_content').upsert({ key: 'categories', content: categoriesData }, { onConflict: 'key' });
-    const { error: prcError } = await supabase.from('site_content').upsert({ key: 'prices', content: pricesData }, { onConflict: 'key' });
-    const { error: hdrError } = await supabase.from('site_content').upsert({ key: 'price_header', content: priceHeader }, { onConflict: 'key' });
+    const { data: catData, error: catError } = await supabase.from('site_content').upsert({ key: 'categories', content: categoriesData }, { onConflict: 'key' }).select();
+    const { data: prcData, error: prcError } = await supabase.from('site_content').upsert({ key: 'prices', content: pricesData }, { onConflict: 'key' }).select();
+    const { data: hdrData, error: hdrError } = await supabase.from('site_content').upsert({ key: 'price_header', content: priceHeader }, { onConflict: 'key' }).select();
 
-    if (catError || prcError || hdrError) {
-      console.error('Save error details:', { catError, prcError, hdrError });
-      const errMsg = catError?.message || prcError?.message || hdrError?.message || 'Неизвестная ошибка';
-      setSaveMessage('Ошибка при сохранении: ' + errMsg);
+    if (catError || prcError || hdrError || !catData?.length || !prcData?.length || !hdrData?.length) {
+      console.error('Save error details:', { catError, prcError, hdrError, catData, prcData, hdrData });
+      const errMsg = catError?.message || prcError?.message || hdrError?.message || 'База данных отклонила сохранение (проверьте права доступа)';
+      setSaveMessage('Ошибка: ' + errMsg);
     } else {
       setSaveMessage('Изменения успешно сохранены на сайте!');
       setTimeout(() => setSaveMessage(''), 3000);
