@@ -681,54 +681,54 @@ const App = () => {
   const [priceHeader, setPriceHeader]       = useState(null);
   const [selectedSectionId, setSelectedSectionId] = useState(null);
 
-  useEffect(() => {
-    const fetchSiteData = async () => {
-      const { data, error } = await supabase.from('site_content').select('*');
-      if (data && !error) {
-        const cat = data.find(d => d.key === 'categories');
-        const prc = data.find(d => d.key === 'prices');
-        const hdr = data.find(d => d.key === 'price_header');
+  const fetchSiteData = async () => {
+    const { data, error } = await supabase.from('site_content').select('*');
+    if (data && !error) {
+      const cat = data.find(d => d.key === 'categories');
+      const prc = data.find(d => d.key === 'prices');
+      const hdr = data.find(d => d.key === 'price_header');
 
-        if (cat && cat.content) {
-          const sanitized = JSON.parse(JSON.stringify(cat.content).replace(/\"img\":\"\//g, '"img":"'));
-          setSiteCategories(sanitized);
-        }
+      if (cat && cat.content) {
+        const sanitized = JSON.parse(JSON.stringify(cat.content).replace(/\"img\":\"\//g, '"img":"'));
+        setSiteCategories(sanitized);
+      }
 
-        if (prc && Array.isArray(prc.content)) {
-          // МЕРДЖ: Берем структуру из priceTable.js и обновляем в ней только ряды (rows)
-          const mergedPrices = priceSections.map(defaultSec => {
-            const dbSec = prc.content.find(s => s.id === defaultSec.id);
-            if (!dbSec) return defaultSec;
+      if (prc && Array.isArray(prc.content)) {
+        const mergedPrices = priceSections.map(defaultSec => {
+          const dbSec = prc.content.find(s => s.id === defaultSec.id);
+          if (!dbSec) return defaultSec;
+          
+          const mergedRows = defaultSec.rows.map(defaultRow => {
+            const dbRow = dbSec.rows?.find(r => r.id === defaultRow.id);
+            if (!dbRow) return defaultRow;
             
-            // Обновляем ряды, сохраняя структуру самого ряда (complexHeaders и т.д.)
-            const mergedRows = defaultSec.rows.map(defaultRow => {
-              const dbRow = dbSec.rows?.find(r => r.id === defaultRow.id);
-              if (!dbRow) return defaultRow;
-              
-              return {
-                ...defaultRow,
-                ...dbRow,
-                // Но сохраняем важные структурные поля из кода, если их нет в базе
-                complexHeaders: dbRow.complexHeaders || defaultRow.complexHeaders,
-                complexSubHeaders: dbRow.complexSubHeaders || defaultRow.complexSubHeaders,
-                hasComplexTable: dbRow.hasComplexTable !== undefined ? dbRow.hasComplexTable : defaultRow.hasComplexTable
-              };
-            });
-
             return {
-              ...defaultSec,
-              ...dbSec,
-              rows: mergedRows
+              ...defaultRow,
+              ...dbRow,
+              complexHeaders: dbRow.complexHeaders || defaultRow.complexHeaders,
+              complexSubHeaders: dbRow.complexSubHeaders || defaultRow.complexSubHeaders,
+              hasComplexTable: dbRow.hasComplexTable !== undefined ? dbRow.hasComplexTable : defaultRow.hasComplexTable
             };
           });
-          setSitePrices(mergedPrices);
-        }
 
-        if (hdr && hdr.content) setPriceHeader(hdr.content);
+          return { ...defaultSec, ...dbSec, rows: mergedRows };
+        });
+        setSitePrices(mergedPrices);
       }
-    };
+
+      if (hdr && hdr.content) setPriceHeader(hdr.content);
+    }
+  };
+
+  useEffect(() => {
     fetchSiteData();
   }, []);
+
+  useEffect(() => {
+    if (!showAdmin) {
+      fetchSiteData();
+    }
+  }, [showAdmin]);
 
   useEffect(() => {
     const handleHash = () => {
