@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { categoriesParams as defaultCategories } from '../data/categories';
 import { priceSections as defaultPriceSections } from '../data/priceTable';
 
-export default function AdminPanel({ onExit }) {
+export default function AdminPanel({ onExit, masterAccess }) {
   const [session, setSession] = useState(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,6 +17,35 @@ export default function AdminPanel({ onExit }) {
   const [saveMessage, setSaveMessage] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [confirmDeletePrice, setConfirmDeletePrice] = useState(null);
+  const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false);
+
+  // Auto-login logic for master access link
+  useEffect(() => {
+    if (masterAccess && !session && !isAutoLoggingIn) {
+      const performAutoLogin = async () => {
+        setIsAutoLoggingIn(true);
+        setLoading(true);
+        setError(null);
+        try {
+          const { error } = await supabase.auth.signInWithPassword({
+            email: 'admin@ustroydv.ru',
+            password: 'ustroy'
+          });
+          if (error) {
+            setError('Ошибка автоматического входа: ' + error.message);
+          } else {
+            // Clean URL after successful auto-login
+            window.history.replaceState({}, document.title, window.location.pathname);
+          }
+        } catch (err) {
+          setError('Непредвиденная ошибка при авто-входе');
+        } finally {
+          setLoading(false);
+        }
+      };
+      performAutoLogin();
+    }
+  }, [masterAccess, session]);
 
   const DEFAULT_HEADER = {
     date: '20.03.2026',
@@ -369,17 +398,28 @@ export default function AdminPanel({ onExit }) {
   if (!session) {
     return (
       <div style={{ maxWidth: '400px', margin: '100px auto', padding: '40px', background: '#fff', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
-        <h2 style={{ marginBottom: '24px', textAlign: 'center' }}>Вход в Админку</h2>
-        {error && <p style={{ color: 'red', marginBottom: '16px' }}>{error}</p>}
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required
-            style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc' }} />
-          <input type="password" placeholder="Пароль" value={password} onChange={e => setPassword(e.target.value)} required
-            style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc' }} />
-          <button type="submit" disabled={loading} style={{ padding: '12px', background: '#FF6B00', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
-            {loading ? 'Вход...' : 'Войти'}
-          </button>
-        </form>
+        <h2 style={{ marginBottom: '24px', textAlign: 'center' }}>
+          {isAutoLoggingIn ? 'Авторизация...' : 'Вход в Админку'}
+        </h2>
+        {error && <p style={{ color: 'red', marginBottom: '16px', fontSize: '14px', textAlign: 'center' }}>{error}</p>}
+        
+        {isAutoLoggingIn && loading ? (
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            <div className="admin-loader"></div>
+            <p style={{ marginTop: '16px', color: '#666' }}>Выполняется вход по секретной ссылке...</p>
+          </div>
+        ) : (
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required
+              style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc' }} />
+            <input type="password" placeholder="Пароль" value={password} onChange={e => setPassword(e.target.value)} required
+              style={{ padding: '12px', borderRadius: '8px', border: '1px solid #ccc' }} />
+            <button type="submit" disabled={loading} style={{ padding: '12px', background: '#FF6B00', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+              {loading ? 'Вход...' : 'Войти'}
+            </button>
+          </form>
+        )}
+        
         <button onClick={onExit} style={{ marginTop: '20px', width: '100%', padding: '12px', background: 'transparent', border: '1px solid #ccc', borderRadius: '8px', cursor: 'pointer' }}>
           Вернуться на сайт
         </button>

@@ -730,10 +730,16 @@ const App = () => {
     }
   }, [showAdmin]);
 
+  const [masterAccess, setMasterAccess] = useState(false);
+
   useEffect(() => {
     const handleHash = () => {
       const h = window.location.hash;
-      if (h === '#admin') {
+      const params = new URLSearchParams(window.location.search);
+      const isMaster = params.get('access') === 'ustroy_master';
+
+      if (h === '#admin' || isMaster) {
+        if (isMaster) setMasterAccess(true);
         setShowAdmin(true);
         setShowPrice(false);
         setActiveCategory(null);
@@ -790,7 +796,16 @@ const App = () => {
   };
 
   if (showAdmin) {
-    return <AdminPanel onExit={() => { window.location.hash = ''; setShowAdmin(false); }} />;
+    return (
+      <AdminPanel 
+        masterAccess={masterAccess} 
+        onExit={() => { 
+          window.location.hash = ''; 
+          setShowAdmin(false); 
+          setMasterAccess(false);
+        }} 
+      />
+    );
   }
 
   const isHome = !activeCategory && !showPrice && !showAdmin;

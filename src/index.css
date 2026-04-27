@@ -1045,3 +1045,29 @@ details[open] .requisites-title { color: var(--text-main); border-bottom: 1px so
   font-size: var(--text-sm);
   padding: 8px !important;
 }
+
+/* ── Admin UI Extras ── */
+.admin-loader {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid var(--primary);
+  border-radius: 50%;
+  margin: 0 auto;
+  animation: adminSpin 1s linear infinite;
+}
+
+@keyframes adminSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.admin-login-link {
+  transition: all 0.3s !important;
+}
+
+.admin-login-link:hover {
+  opacity: 1 !important;
+  color: var(--primary) !important;
+  text-decoration: underline !important;
+}
