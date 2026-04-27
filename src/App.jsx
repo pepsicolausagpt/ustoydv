@@ -625,7 +625,13 @@ const CategoryDetail = ({ category, onBack, onPriceClick }) => {
         )}
         <div className="price-list-vertical">
           {category.prices.map(item => (
-            <div key={item.id} className="price-list-item">
+            <div 
+              key={item.id} 
+              className="price-list-item" 
+              onClick={onPriceClick} 
+              style={{ cursor: 'pointer' }}
+              title="Нажмите, чтобы увидеть все цены в прайс-листе"
+            >
               <img
                 src={item.img || category.img}
                 alt={item.name}
