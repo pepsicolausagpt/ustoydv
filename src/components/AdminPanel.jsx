@@ -462,9 +462,6 @@ export default function AdminPanel({ onExit }) {
             <p style={{ color: '#666', marginBottom: '24px', fontSize: '14px' }}>
               Здесь редактируются детальные таблицы с ценами, которые открываются по кнопке «Прайс-лист». Вы можете менять значения в каждой ячейке таблицы, добавлять новые строки или удалять старые.
             </p>
-            <div style={{ padding: '12px', background: '#fff9c4', borderRadius: '8px', marginBottom: '20px', border: '1px solid #fbc02d', fontSize: '13px' }}>
-              ⚠️ Если таблица выглядит старой или не редактируется — нажмите <b>«Инициализировать базу»</b> в самом низу страницы. Это обновит структуру данных в базе под новый дизайн.
-            </div>
             {pricesData?.map((section, secIdx) => {
               const isDelivery = section.type === 'delivery' || ['materials', 'soil', 'coal', 'firewood'].includes(section.id);
               
