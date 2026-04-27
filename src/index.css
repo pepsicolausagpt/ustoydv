@@ -709,6 +709,7 @@ details[open] .requisites-title { color: var(--text-main); border-bottom: 1px so
 /* ── Новые классические таблицы прайса ── */
 .pt-section {
   margin-bottom: 40px;
+  scroll-margin-top: 100px;
 }
 
 .pt-section-title {

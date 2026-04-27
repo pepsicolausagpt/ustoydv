@@ -99,7 +99,7 @@ const DeliveryTable = ({ section }) => {
   if (weights.length === 0) return null;
 
   return (
-    <div className="pt-section">
+    <div className="pt-section" id={`price-section-${section.id}`}>
       <h2 className="pt-section-title">{section.title}</h2>
       <div className="pt-scroll-wrapper">
         <table className="pt-classic">
@@ -212,7 +212,7 @@ const SimpleTable = ({ section }) => {
   const showMainHeader = !(firstRow?.hasComplexTable || ['doska', 'brus', 'brusok'].includes(firstRow?.id));
 
   return (
-    <div className="pt-section">
+    <div className="pt-section" id={`price-section-${section.id}`}>
       <h2 className="pt-section-title">{section.title}</h2>
       <div className="pt-scroll-wrapper">
         <table className="pt-classic pt-simple">
@@ -342,8 +342,19 @@ const SimpleTable = ({ section }) => {
 };
 
 /* ─── PriceView ───────────────────────────────────────────── */
-const PriceView = ({ onBack, priceData, priceHeader }) => {
-  useEffect(() => { window.scrollTo(0, 0); }, []);
+const PriceView = ({ onBack, priceData, priceHeader, initialSectionId }) => {
+  useEffect(() => {
+    if (initialSectionId) {
+      setTimeout(() => {
+        const el = document.getElementById(`price-section-${initialSectionId}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, [initialSectionId]);
 
   const sectionsToRender = (priceData && priceData.length > 0) ? priceData : priceSections;
 
@@ -628,9 +639,9 @@ const CategoryDetail = ({ category, onBack, onPriceClick }) => {
             <div 
               key={item.id} 
               className="price-list-item" 
-              onClick={onPriceClick} 
+              onClick={() => onPriceClick(category.id)} 
               style={{ cursor: 'pointer' }}
-              title="Нажмите, чтобы увидеть все цены в прайс-листе"
+              title={`Нажмите, чтобы увидеть цены на ${item.name} в прайс-листе`}
             >
               <img
                 src={item.img || category.img}
@@ -668,6 +679,7 @@ const App = () => {
   const [siteCategories, setSiteCategories] = useState(categoriesParams);
   const [sitePrices, setSitePrices]         = useState(priceSections);
   const [priceHeader, setPriceHeader]       = useState(null);
+  const [selectedSectionId, setSelectedSectionId] = useState(null);
 
   useEffect(() => {
     const fetchSiteData = async () => {
@@ -753,12 +765,13 @@ const App = () => {
     window.location.hash = `category-${cat.id}`;
   };
 
-  const handleShowPrice = () => {
+  const handleShowPrice = (sectionId) => {
+    setSelectedSectionId(typeof sectionId === 'string' ? sectionId : null);
     setShowPrice(true);
     setActiveCategory(null);
     setShowAdmin(false);
     window.location.hash = 'price';
-    window.scrollTo(0, 0);
+    if (!sectionId) window.scrollTo(0, 0);
   };
 
   const handleBack = () => {
@@ -788,7 +801,12 @@ const App = () => {
 
       <main>
         {showPrice ? (
-          <PriceView onBack={handleBack} priceData={sitePrices} priceHeader={priceHeader} />
+          <PriceView 
+            onBack={handleBack} 
+            priceData={sitePrices} 
+            priceHeader={priceHeader} 
+            initialSectionId={selectedSectionId} 
+          />
         ) : activeCategory ? (
           <CategoryDetail category={activeCategory} onBack={handleBack} onPriceClick={handleShowPrice} />
         ) : (
