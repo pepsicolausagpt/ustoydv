@@ -56,9 +56,21 @@ export default function AdminPanel({ onExit }) {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setError(error.message);
-    setLoading(false);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ 
+        email: email.trim(), 
+        password: password.trim() 
+      });
+      if (error) {
+        setError(error.message);
+        console.error('Login error:', error);
+      }
+    } catch (err) {
+      setError('Произошла непредвиденная ошибка при входе');
+      console.error('Unexpected login error:', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLogout = async () => {
