@@ -149,7 +149,9 @@ export default function AdminPanel({ onExit }) {
     const { error: hdrError } = await supabase.from('site_content').upsert({ key: 'price_header', content: priceHeader }, { onConflict: 'key' });
 
     if (catError || prcError || hdrError) {
-      setSaveMessage('Ошибка при сохранении!');
+      console.error('Save error details:', { catError, prcError, hdrError });
+      const errMsg = catError?.message || prcError?.message || hdrError?.message || 'Неизвестная ошибка';
+      setSaveMessage('Ошибка при сохранении: ' + errMsg);
     } else {
       setSaveMessage('Изменения успешно сохранены на сайте!');
       setTimeout(() => setSaveMessage(''), 3000);
