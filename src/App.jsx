@@ -9,12 +9,12 @@ import {
   priceSections,
   PRICE_DATE,
   PRICE_DELIVERY_ZONE,
+  PRICE_DELIVERY_ZONE2,
   PRICE_DELIVERY_NOTES
 } from './data/priceTable.js';
 import { supabase } from './lib/supabase.js';
 import AdminPanel from './components/AdminPanel.jsx';
 
-/* ─── Helpers ─────────────────────────────────────────────── */
 const SvgIcon = ({ path, size = 24 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none"
     stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -72,25 +72,285 @@ const Footer = () => (
       </p>
       <div className="footer-bottom">
         <span>© 2026 УстройДВ.РФ</span>
-        <a href="#" className="back-to-top"
-          onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
-          Наверх ↑
-        </a>
+        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+          <a href="#admin" className="admin-login-link" style={{ fontSize: '12px', opacity: 0.5, textDecoration: 'none', color: 'inherit' }}>
+            Вход для администратора
+          </a>
+          <a href="#" className="back-to-top"
+            onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>
+            Наверх ↑
+          </a>
+        </div>
       </div>
     </div>
   </footer>
 );
 
+/* ─── DeliveryTable — таблица с матрицей доставки ─────────── */
+const DeliveryTable = ({ section }) => {
+  if (!section) return null;
+  
+  // Берем дефолтные значения, если в базе их нет
+  const defaultSec = priceSections.find(s => s.id === section.id);
+  const weights = section.deliveryWeights || defaultSec?.deliveryWeights || [];
+  const volumes = section.deliveryVolumes || defaultSec?.deliveryVolumes || [];
+  const numDeliveryCols = weights.length;
+
+  if (weights.length === 0) return null;
+
+  return (
+    <div className="pt-section">
+      <h2 className="pt-section-title">{section.title}</h2>
+      <div className="pt-scroll-wrapper">
+        <table className="pt-classic">
+          <thead>
+            {/* Строка 1: заголовки колонок с rowspan/colspan */}
+            <tr>
+              <td rowSpan={section.deliverySubLabel ? 4 : (volumes.length > 0 ? 4 : 2)} className="pt-h-name">
+                {section.id === 'coal' ? 'Сорт угля' :
+                 section.id === 'firewood' ? 'Наименование дров*' :
+                 section.id === 'soil' ? 'Наименование удобрений' :
+                 'Наименование сыпучих материалов'}
+              </td>
+              <td rowSpan={section.deliverySubLabel ? 4 : (volumes.length > 0 ? 4 : 2)} className="pt-h-price">
+                {section.priceColLabel || 'Цена'}
+              </td>
+              <td rowSpan={section.deliverySubLabel ? 4 : (volumes.length > 0 ? 4 : 2)} className="pt-h-bag">
+                {section.bagColLabel || 'Мешок 50кг'}
+              </td>
+              <td colSpan={numDeliveryCols} className="pt-h-delivery-top">
+                {section.deliveryLabel || 'Цена с доставкой'}
+              </td>
+            </tr>
+            {/* Строка 2: подзаголовок (если есть) */}
+            {section.deliverySubLabel && (
+              <tr>
+                <td colSpan={numDeliveryCols} className="pt-h-delivery-sub">
+                  {section.deliverySubLabel}
+                </td>
+              </tr>
+            )}
+            {/* Строка 3: тоннаж */}
+            {volumes.length > 0 && (
+              <tr>
+                {weights.map((w, i) => (
+                  <td key={i} className="pt-h-weight">{w}</td>
+                ))}
+              </tr>
+            )}
+            {/* Строка 4: объёмы (или единственная строка весов/объёмов) */}
+            <tr>
+              {(volumes.length > 0 ? volumes : weights).map((v, i) => (
+                <td key={i} className="pt-h-volume">{v}</td>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {(section.rows && section.rows.length > 0 ? section.rows : (priceSections.find(s => s.id === section.id)?.rows || [])).map((row, idx) => {
+              const deliveryData = row.delivery || [];
+              const is2D = Array.isArray(deliveryData[0]);
+
+              return (
+                <tr key={row.id || idx} className={row.isFooterRow ? 'pt-footer-row' : (idx % 2 === 1 ? 'pt-row-odd' : '')}>
+                  <td className="pt-cell-name">{row.name}</td>
+                  <td className="pt-cell-center">
+                    {row.price === null ? '' : row.price === '-' ? '—' : typeof row.price === 'number' ? row.price.toLocaleString('ru-RU') : row.price}
+                  </td>
+                  <td className="pt-cell-center">
+                    {row.bag === null ? '' : row.bag === '-' ? '—' : typeof row.bag === 'number' ? row.bag.toLocaleString('ru-RU') : row.bag}
+                  </td>
+                  {is2D ? (
+                    // Новый формат: матрица (массив массивов)
+                    deliveryData.map((prices, wi) => (
+                      <td key={wi} className="pt-cell-center" style={{ padding: 0 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                          {prices.map((p, vi) => (
+                            <div key={vi} style={{ 
+                              padding: '8px 4px', 
+                              borderBottom: vi < prices.length - 1 ? '1px solid #eee' : 'none',
+                              minHeight: '34px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}>
+                              {p === '-' ? '—' : typeof p === 'number' ? p.toLocaleString('ru-RU') : p}
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                    ))
+                  ) : (
+                    // Старый формат: плоский список
+                    deliveryData.map((val, i) => (
+                      <td key={i} className="pt-cell-center">
+                        {val === '-' ? '—' : typeof val === 'number' ? val.toLocaleString('ru-RU') : val}
+                      </td>
+                    ))
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      {section.footnotes && section.footnotes.length > 0 && (
+        <div className="pt-footnotes">
+          {section.footnotes.map((fn, i) => (
+            <p key={i} className="pt-footnote">* {fn}</p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ─── SimpleTable — простая таблица (пиломатериалы/техника) ─ */
+const SimpleTable = ({ section }) => {
+  if (!section || !section.rows) return null;
+  // Если у первого элемента сложная таблица, скрываем основную шапку
+  const firstRow = section.rows[0];
+  const showMainHeader = !(firstRow?.hasComplexTable || ['doska', 'brus', 'brusok'].includes(firstRow?.id));
+
+  return (
+    <div className="pt-section">
+      <h2 className="pt-section-title">{section.title}</h2>
+      <div className="pt-scroll-wrapper">
+        <table className="pt-classic pt-simple">
+          {showMainHeader && (
+            <thead>
+              <tr>
+                <td className="pt-h-name">Наименование</td>
+                <td className="pt-h-price">{section.priceColLabel || 'Цена'}</td>
+                <td className="pt-h-bag">{section.unitColLabel || 'Ед. изм.'}</td>
+                <td className="pt-h-note">{section.noteColLabel || 'Примечание'}</td>
+              </tr>
+            </thead>
+          )}
+          <tbody>
+            {(section.rows && section.rows.length > 0 ? section.rows : (priceSections.find(s => s.id === section.id)?.rows || [])).map((row, idx) => {
+              const isLumber = ['doska', 'brus', 'brusok'].includes(row.id);
+              const hasComplex = row.hasComplexTable || isLumber;
+              
+              const defaultRow = priceSections.find(s => s.id === section.id)?.rows.find(r => r.id === row.id);
+              const headers = row.complexHeaders || defaultRow?.complexHeaders || [];
+              const subHeaders = row.complexSubHeaders || defaultRow?.complexSubHeaders || [];
+              const subRows = row.rows || [];
+
+              return (
+                <React.Fragment key={row.id || idx}>
+                  {!hasComplex && (
+                    <tr className={idx % 2 === 1 ? 'pt-row-odd' : ''}>
+                      <td className="pt-cell-name">
+                        <div className="pt-name-with-btn">
+                          <span style={{ fontWeight: 700 }}>{row.name}</span>
+                        </div>
+                      </td>
+                      <td className="pt-cell-center">{row.price}</td>
+                      <td className="pt-cell-center">{row.unit}</td>
+                      <td className="pt-cell-note">{row.note}</td>
+                    </tr>
+                  )}
+                  {hasComplex ? (
+                    <tr className="pt-sub-row">
+                      <td colSpan={4}>
+                        <div className="pt-sub-table-wrapper" style={{ padding: '0 0 20px 0' }}>
+                          <table className="pt-sub-table complex">
+                            <thead>
+                              <tr>
+                                {headers.map((h, i) => (
+                                  <td key={i} rowSpan={h.rowspan} colSpan={h.colspan}>{h.label}</td>
+                                ))}
+                              </tr>
+                              <tr>
+                                {subHeaders.filter(h => h.colspan).map((h, i) => (
+                                  <td key={i} colSpan={h.colspan} style={{ textAlign: 'center' }}>{h.label}</td>
+                                ))}
+                              </tr>
+                              <tr>
+                                {subHeaders.filter(h => h.isUnit).map((h, i) => (
+                                  <td key={i} style={{ textAlign: 'center' }}>{h.label}</td>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {subRows.map((sr, i) => (
+                                sr.isGroup ? (
+                                  <tr key={i} className="pt-sub-group-header">
+                                    <td colSpan={7}>{sr.label}</td>
+                                  </tr>
+                                ) : (
+                                  <tr key={i}>
+                                    <td style={{ textAlign: 'center' }}>{sr.n}</td>
+                                    <td>{sr.name}</td>
+                                    <td style={{ textAlign: 'center' }}>{sr.count}</td>
+                                    <td style={{ textAlign: 'center' }}>{sr.s_m3}р.</td>
+                                    <td style={{ textAlign: 'center' }}>{sr.s_p}р.</td>
+                                    <td style={{ textAlign: 'center' }}>{sr.l_m3}р.</td>
+                                    <td style={{ textAlign: 'center' }}>{sr.l_p}р.</td>
+                                  </tr>
+                                )
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : row.hasSubTable ? (
+                    <tr className="pt-sub-row">
+                      <td colSpan={4}>
+                        <div className="pt-sub-table-wrapper">
+                          <table className="pt-sub-table">
+                            <thead>
+                              <tr>
+                                {row.subTableHeaders.map((h, i) => <td key={i}>{h}</td>)}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {row.subTableRows.map((sr, i) => (
+                                sr.isHeader ? (
+                                  <tr key={i} className="pt-sub-group-header">
+                                    <td colSpan={row.subTableHeaders.length}>{sr.name}</td>
+                                  </tr>
+                                ) : (
+                                  <tr key={i}>
+                                    <td>{sr.name}</td>
+                                    {sr.values.map((v, j) => <td key={j}>{v}</td>)}
+                                  </tr>
+                                )
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : null}
+                </React.Fragment>
+              );
+            })}
+          </tbody>
+      </table>
+    </div>
+      {section.footnotes && section.footnotes.length > 0 && (
+        <div className="pt-footnotes">
+          {section.footnotes.map((fn, i) => (
+            <p key={i} className="pt-footnote">{fn}</p>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 /* ─── PriceView ───────────────────────────────────────────── */
-const PriceView = ({ onBack, priceData }) => {
+const PriceView = ({ onBack, priceData, priceHeader }) => {
   useEffect(() => { window.scrollTo(0, 0); }, []);
-  const [expandedRows, setExpandedRows] = useState({});
 
-  const toggleRow = (id) => {
-    setExpandedRows(prev => ({ ...prev, [id]: !prev[id] }));
-  };
+  const sectionsToRender = (priceData && priceData.length > 0) ? priceData : priceSections;
 
-  const sectionsToRender = priceData && priceData.length > 0 ? priceData : priceSections;
+  const hDate  = priceHeader?.date  || PRICE_DATE;
+  const hZone  = priceHeader?.zone  || PRICE_DELIVERY_ZONE;
+  const hZone2 = priceHeader?.zone2 || PRICE_DELIVERY_ZONE2;
+  const hNotes = Array.isArray(priceHeader?.notes) ? priceHeader.notes : (Array.isArray(PRICE_DELIVERY_NOTES) ? PRICE_DELIVERY_NOTES : []);
 
   return (
     <div className="price-view container">
@@ -98,103 +358,35 @@ const PriceView = ({ onBack, priceData }) => {
         <SvgIcon path={BACK_ICON} /> Назад на главную
       </button>
 
-      <div className="price-view-header">
-        <h1>Прайс-лист</h1>
-        <span className="price-date-badge">от {PRICE_DATE} г.</span>
+      {/* ── Шапка прайса ── */}
+      <div className="price-classic-header">
+        <h1>Прайс</h1>
+        <div className="price-classic-divider" />
+        <p className="price-classic-date">от {hDate} г.</p>
+        <p className="price-classic-zone">{hZone}</p>
+        <p className="price-classic-zone">{hZone2}</p>
+        {hNotes.map((note, i) => (
+          <p key={i} className="price-classic-note">{note}</p>
+        ))}
+        <div className="price-classic-divider" />
       </div>
 
-      <div className="price-info-block">
-        <p>{PRICE_DELIVERY_ZONE}</p>
-        <div className="price-delivery-notes">
-          {PRICE_DELIVERY_NOTES.map((note, i) => (
-            <p key={i} className="price-delivery-note">• {note}</p>
-          ))}
-        </div>
+      {/* ── Таблицы ── */}
+      <div className="price-tables-list">
+        {sectionsToRender.filter(s => s && s.id).map((section, idx) => {
+          try {
+            const isDelivery = section.type === 'delivery' || 
+                             ['materials', 'sand', 'gravel', 'soil', 'coal', 'firewood'].includes(section.id);
+            if (isDelivery) {
+              return <DeliveryTable key={section.id || idx} section={section} />;
+            }
+            return <SimpleTable key={section.id || idx} section={section} />;
+          } catch (err) {
+            console.error("Error rendering section:", section.id, err);
+            return <div key={idx} className="error-note">Ошибка загрузки раздела {section.title}</div>;
+          }
+        })}
       </div>
-
-      {sectionsToRender.map(section => (
-        <div key={section.id} className="price-section">
-          <h2 className="price-section-title">{section.title}</h2>
-          <div className="price-table-wrapper">
-            <table className="price-table">
-              <thead>
-                <tr>
-                  <th className="pt-name-col">Наименование</th>
-                  <th className="pt-price-col">{section.unitCol}</th>
-                  {section.bagCol && <th className="pt-bag-col">{section.bagCol}</th>}
-                  <th className="pt-note-col">Примечание</th>
-                </tr>
-              </thead>
-              <tbody>
-                {section.rows.map((row, idx) => (
-                  <React.Fragment key={row.id}>
-                    <tr className={idx % 2 === 0 ? '' : 'pt-row-alt'}>
-                      <td className="pt-name">
-                        {row.name}
-                        {row.hasSubTable && (
-                          <button 
-                            className={`expand-btn ${expandedRows[row.id] ? 'expanded' : ''}`}
-                            onClick={() => toggleRow(row.id)}
-                          >
-                            {expandedRows[row.id] ? 'Свернуть цены' : 'Показать все размеры'}
-                          </button>
-                        )}
-                      </td>
-                      <td className="pt-price">
-                        <span className={row.price === 'уточнить' || row.price === '—'
-                          ? 'pt-price-na' : 'pt-price-val'}>
-                          {row.price}
-                        </span>
-                        {row.price !== '—' && row.price !== 'уточнить' && (
-                          <span className="pt-unit"> {row.unit}</span>
-                        )}
-                      </td>
-                      {section.bagCol && (
-                        <td className="pt-bag">
-                          {row.bag && row.bag !== '—' ? row.bag : <span className="pt-price-na">—</span>}
-                        </td>
-                      )}
-                      <td className="pt-note">{row.note || ''}</td>
-                    </tr>
-                    {row.hasSubTable && expandedRows[row.id] && (
-                      <tr className="sub-table-row">
-                        <td colSpan={section.bagCol ? 4 : 3}>
-                          <div className="sub-table-container">
-                            <table className="sub-table">
-                              <thead>
-                                <tr>
-                                  {row.subTableHeaders.map((h, i) => <th key={i}>{h}</th>)}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {row.subTableRows.map((sr, i) => (
-                                  sr.isHeader ? (
-                                    <tr key={i} className="sub-table-header-row">
-                                      <td colSpan={row.subTableHeaders.length}>{sr.name}</td>
-                                    </tr>
-                                  ) : (
-                                    <tr key={i}>
-                                      <td>{sr.name}</td>
-                                      {sr.values.map((v, j) => <td key={j}>{v}</td>)}
-                                    </tr>
-                                  )
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          {section.footnote && (
-            <p className="price-section-footnote">* {section.footnote}</p>
-          )}
-        </div>
-      ))}
 
       <div className="cd-cta-block" style={{ marginTop: '60px' }}>
         <h2>Нужна консультация?</h2>
@@ -218,13 +410,8 @@ const FACTORY_ICON= 'M2 20h20v2H2v-2z M6 6v6l4-3v3l4-3v3l4-3V2H6v4z';
 const ContactsSection = () => (
   <section className="contacts-section container" id="contacts">
     <h2 className="section-title section-title--center">Контакты</h2>
-
     <div className="contacts-grid">
-
-      {/* ── Левая колонка ──────────── */}
       <div className="contacts-left">
-
-        {/* Телефоны */}
         <div className="contact-card">
           <div className="contact-card-icon"><SvgIcon path={PHONE_ICON} /></div>
           <div>
@@ -233,8 +420,6 @@ const ContactsSection = () => (
             <a href={`tel:${PHONE_SECONDARY}`} className="contact-phone-big">{PHONE_SECONDARY_DISPLAY}</a>
           </div>
         </div>
-
-        {/* Email */}
         <div className="contact-card">
           <div className="contact-card-icon"><SvgIcon path={MAIL_ICON} /></div>
           <div>
@@ -242,8 +427,6 @@ const ContactsSection = () => (
             <a href={`mailto:${EMAIL}`} className="contact-link">{EMAIL}</a>
           </div>
         </div>
-
-        {/* Часы работы */}
         <div className="contact-card">
           <div className="contact-card-icon"><SvgIcon path={CLOCK_ICON} /></div>
           <div>
@@ -252,8 +435,6 @@ const ContactsSection = () => (
             <p className="contact-info-sub">Воскресенье — выходной</p>
           </div>
         </div>
-
-        {/* Адреса */}
         <div className="contact-card">
           <div className="contact-card-icon"><SvgIcon path={MAP_ICON} /></div>
           <div>
@@ -268,8 +449,6 @@ const ContactsSection = () => (
             </a>
           </div>
         </div>
-
-        {/* Доставка */}
         <div className="contact-card">
           <div className="contact-card-icon"><SvgIcon path={TRUCK_ICON} /></div>
           <div>
@@ -278,15 +457,12 @@ const ContactsSection = () => (
             <p className="contact-info">Доставка по Хабаровску и краю</p>
           </div>
         </div>
-
-        {/* MAX */}
         <a href={MAX_LINK} target="_blank" rel="noreferrer" className="btn-primary contact-max-btn">
           <SvgIcon path={MSG_ICON} />
           Написать в MAX
         </a>
       </div>
 
-      {/* ── Правая колонка — карта ── */}
       <div className="contacts-right">
         <div className="contacts-map-wrapper">
           <iframe
@@ -300,8 +476,6 @@ const ContactsSection = () => (
             className="contacts-map-iframe"
           />
         </div>
-
-        {/* Реквизиты */}
         <details className="requisites-card">
           <summary className="requisites-title">
             <SvgIcon path={FACTORY_ICON} size={18} />
@@ -414,7 +588,7 @@ const HomeView = ({ categories, onSelectCategory, onPriceClick }) => {
 };
 
 /* ─── CategoryDetail ──────────────────────────────────────── */
-const CategoryDetail = ({ category, onBack }) => {
+const CategoryDetail = ({ category, onBack, onPriceClick }) => {
   useEffect(() => { window.scrollTo(0, 0); }, [category]);
 
   return (
@@ -438,7 +612,14 @@ const CategoryDetail = ({ category, onBack }) => {
       </div>
 
       <div className="cd-price-section">
-        <h2>Каталог и Цены</h2>
+        <h2 
+          className="cd-price-title-link"
+          onClick={onPriceClick}
+          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '10px' }}
+          title="Открыть полный прайс-лист"
+        >
+          Каталог и Цены <span style={{ fontSize: '0.8em', opacity: 0.7 }}>→</span>
+        </h2>
         {category.priceNote && (
           <p className="cd-price-note">{category.priceNote}</p>
         )}
@@ -480,6 +661,7 @@ const App = () => {
   const [showAdmin, setShowAdmin]           = useState(false);
   const [siteCategories, setSiteCategories] = useState(categoriesParams);
   const [sitePrices, setSitePrices]         = useState(priceSections);
+  const [priceHeader, setPriceHeader]       = useState(null);
 
   useEffect(() => {
     const fetchSiteData = async () => {
@@ -487,18 +669,49 @@ const App = () => {
       if (data && !error) {
         const cat = data.find(d => d.key === 'categories');
         const prc = data.find(d => d.key === 'prices');
+        const hdr = data.find(d => d.key === 'price_header');
+
         if (cat && cat.content) {
-          // Удаляем ведущий слеш из путей картинок для GitHub Pages
-          const sanitized = JSON.parse(JSON.stringify(cat.content).replace(/"img":"\//g, '"img":"'));
+          const sanitized = JSON.parse(JSON.stringify(cat.content).replace(/\"img\":\"\//g, '"img":"'));
           setSiteCategories(sanitized);
         }
-        if (prc && prc.content) setSitePrices(prc.content);
+
+        if (prc && Array.isArray(prc.content)) {
+          // МЕРДЖ: Берем структуру из priceTable.js и обновляем в ней только ряды (rows)
+          const mergedPrices = priceSections.map(defaultSec => {
+            const dbSec = prc.content.find(s => s.id === defaultSec.id);
+            if (!dbSec) return defaultSec;
+            
+            // Обновляем ряды, сохраняя структуру самого ряда (complexHeaders и т.д.)
+            const mergedRows = defaultSec.rows.map(defaultRow => {
+              const dbRow = dbSec.rows?.find(r => r.id === defaultRow.id);
+              if (!dbRow) return defaultRow;
+              
+              return {
+                ...defaultRow,
+                ...dbRow,
+                // Но сохраняем важные структурные поля из кода, если их нет в базе
+                complexHeaders: dbRow.complexHeaders || defaultRow.complexHeaders,
+                complexSubHeaders: dbRow.complexSubHeaders || defaultRow.complexSubHeaders,
+                hasComplexTable: dbRow.hasComplexTable !== undefined ? dbRow.hasComplexTable : defaultRow.hasComplexTable
+              };
+            });
+
+            return {
+              ...defaultSec,
+              ...dbSec,
+              rows: mergedRows
+            };
+          });
+          setSitePrices(mergedPrices);
+        }
+
+        if (hdr && hdr.content) setPriceHeader(hdr.content);
       }
     };
     fetchSiteData();
   }, []);
 
-  /* Синхронизация состояния с хэшем */
   useEffect(() => {
     const handleHash = () => {
       const h = window.location.hash;
@@ -513,7 +726,6 @@ const App = () => {
       } else if (h.startsWith('#category-')) {
         setShowPrice(false);
         setShowAdmin(false);
-        // Find category from dynamic data
         const catId = h.replace('#category-', '');
         const found = siteCategories.find(c => c.id === catId);
         if (found) setActiveCategory(found);
@@ -524,7 +736,6 @@ const App = () => {
       }
     };
     window.addEventListener('hashchange', handleHash);
-    // Call once on load
     handleHash();
     return () => window.removeEventListener('hashchange', handleHash);
   }, [siteCategories]);
@@ -571,9 +782,9 @@ const App = () => {
 
       <main>
         {showPrice ? (
-          <PriceView onBack={handleBack} priceData={sitePrices} />
+          <PriceView onBack={handleBack} priceData={sitePrices} priceHeader={priceHeader} />
         ) : activeCategory ? (
-          <CategoryDetail category={activeCategory} onBack={handleBack} />
+          <CategoryDetail category={activeCategory} onBack={handleBack} onPriceClick={handleShowPrice} />
         ) : (
           <HomeView
             categories={siteCategories}
