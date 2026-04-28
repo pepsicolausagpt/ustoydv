@@ -71,7 +71,8 @@ export const saveToGithub = async (content) => {
     body: JSON.stringify({
       message: `Update data: ${new Date().toLocaleString()}`,
       content: btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2)))), // Правильная обработка UTF-8 для btoa
-      sha: sha // SHA обязателен для обновления существующего файла
+      sha: sha, // SHA обязателен для обновления существующего файла
+      branch: 'main'
     })
   });
 
@@ -111,7 +112,8 @@ export const uploadImageToGithub = async (file) => {
     },
     body: JSON.stringify({
       message: `Upload image: ${fileName}`,
-      content: base64Content
+      content: base64Content,
+      branch: 'main'
     })
   });
 
