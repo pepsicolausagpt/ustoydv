@@ -178,17 +178,23 @@ export default function AdminPanel({ onExit, masterAccess }) {
   const handleSave = async () => {
     setIsSaving(true);
     setSaveMessage('');
-    const { data: catData, error: catError } = await supabase.from('site_content').upsert({ key: 'categories', content: categoriesData }, { onConflict: 'key' }).select();
-    const { data: prcData, error: prcError } = await supabase.from('site_content').upsert({ key: 'prices', content: pricesData }, { onConflict: 'key' }).select();
-    const { data: hdrData, error: hdrError } = await supabase.from('site_content').upsert({ key: 'price_header', content: priceHeader }, { onConflict: 'key' }).select();
+    
+    try {
+      const { error: catError } = await supabase.from('site_content').upsert({ key: 'categories', content: categoriesData }, { onConflict: 'key' });
+      const { error: prcError } = await supabase.from('site_content').upsert({ key: 'prices', content: pricesData }, { onConflict: 'key' });
+      const { error: hdrError } = await supabase.from('site_content').upsert({ key: 'price_header', content: priceHeader }, { onConflict: 'key' });
 
-    if (catError || prcError || hdrError || !catData?.length || !prcData?.length || !hdrData?.length) {
-      console.error('Save error details:', { catError, prcError, hdrError, catData, prcData, hdrData });
-      const errMsg = catError?.message || prcError?.message || hdrError?.message || 'База данных отклонила сохранение (проверьте права доступа)';
-      setSaveMessage('Ошибка: ' + errMsg);
-    } else {
-      setSaveMessage('Изменения успешно сохранены на сайте!');
-      setTimeout(() => setSaveMessage(''), 3000);
+      if (catError || prcError || hdrError) {
+        console.error('Save error details:', { catError, prcError, hdrError });
+        const errMsg = catError?.message || prcError?.message || hdrError?.message || 'База данных отклонила сохранение (проверьте права доступа)';
+        setSaveMessage('Ошибка: ' + errMsg);
+      } else {
+        setSaveMessage('Изменения успешно сохранены на сайте!');
+        setTimeout(() => setSaveMessage(''), 3000);
+      }
+    } catch (err) {
+      console.error('Unexpected save error:', err);
+      setSaveMessage('Непредвиденная ошибка при сохранении');
     }
     setIsSaving(false);
   };

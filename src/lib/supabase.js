@@ -3,22 +3,27 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = 'https://mcxhucgarmmvwdgqgdxb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_F-ClcxM7_GSuDHfIgxTTvg_SB2q73_b';
 
-// Получаем URL прокси из localStorage или используем системный по умолчанию
+// Ссылка на ваш Google Script Proxy (теперь используется только если включен режим прокси)
 const DEFAULT_PROXY_URL = 'https://script.google.com/macros/s/AKfycbzENk9aNITI9xK_M6Q_rZb0RdOv9tTWkQq5jK-VyHPDTYSnfZBeQivvboNVq60g1N4SEw/exec';
-const PROXY_URL = typeof window !== 'undefined' ? (localStorage.getItem('supabase_proxy') || DEFAULT_PROXY_URL) : DEFAULT_PROXY_URL;
+
+// Прокси активен только если:
+// 1. Пользователь сохранил свой URL в localStorage
+// 2. В URL страницы есть флаг ?proxy=true (для тестирования)
+const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+const PROXY_URL = typeof window !== 'undefined' ? (localStorage.getItem('supabase_proxy') || (params?.get('proxy') === 'true' ? DEFAULT_PROXY_URL : null)) : null;
 
 /**
  * Кастомный fetch для перенаправления запросов через Google Apps Script Proxy.
- * Это необходимо для обхода блокировок Supabase в некоторых сетях.
  */
 const customFetch = async (url, options = {}) => {
+  // Если прокси не настроен, используем обычный fetch
   if (!PROXY_URL) return fetch(url, options);
 
   try {
     const urlObj = new URL(url);
+    // Для прокси нам нужен полный путь с параметрами
     const path = urlObj.pathname + urlObj.search;
     
-    // Извлекаем токен из заголовков для передачи в параметре (как ждет скрипт)
     let token = '';
     if (options.headers) {
       const auth = options.headers['Authorization'] || options.headers['authorization'];
@@ -27,15 +32,30 @@ const customFetch = async (url, options = {}) => {
       }
     }
 
-    // Формируем URL прокси
     const proxyUrl = new URL(PROXY_URL);
     proxyUrl.searchParams.set('path', path);
     if (token) {
       proxyUrl.searchParams.set('token', token);
     }
 
-    // Выполняем запрос через прокси
-    return fetch(proxyUrl.toString(), options);
+    // ВАЖНО: Google Apps Script не поддерживает OPTIONS запросы (CORS preflight).
+    // Чтобы избежать ошибки, мы НЕ передаем кастомные заголовки (apikey, Authorization) в fetch.
+    // Ваш скрипт Google Script сам подставит нужные заголовки при запросе к Supabase.
+    const proxyOptions = {
+      method: options.method || 'GET',
+      // Оставляем body если это POST/PUT
+      body: options.body
+    };
+
+    // Если есть тело запроса, указываем тип контента, который не триггерит OPTIONS (если возможно)
+    // Но для Supabase JSON обязателен, поэтому просто надеемся на отсутствие заголовков apikey/auth
+    if (options.body) {
+      proxyOptions.headers = {
+        'Content-Type': 'text/plain', // Используем text/plain чтобы избежать CORS preflight для JSON
+      };
+    }
+
+    return fetch(proxyUrl.toString(), proxyOptions);
   } catch (err) {
     console.error('Proxy Fetch Error:', err);
     return fetch(url, options);

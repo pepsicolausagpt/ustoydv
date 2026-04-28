@@ -732,13 +732,25 @@ const App = () => {
 
   const [masterAccess, setMasterAccess] = useState(false);
 
+  // Robust initial check for secret access
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('access') === 'ustroy_access_7k2m9p_admin') {
+      setMasterAccess(true);
+      setShowAdmin(true);
+      if (window.location.hash !== '#admin') {
+        window.location.hash = 'admin';
+      }
+    }
+  }, []);
+
   useEffect(() => {
     const handleHash = () => {
       const h = window.location.hash;
       const params = new URLSearchParams(window.location.search);
-      const isMaster = params.get('access') === 'ustroy_master';
+      const isMaster = params.get('access') === 'ustroy_access_7k2m9p_admin';
 
-      if (h === '#admin' || isMaster) {
+      if (h === '#admin' || isMaster || masterAccess) {
         if (isMaster) setMasterAccess(true);
         setShowAdmin(true);
         setShowPrice(false);
@@ -762,7 +774,7 @@ const App = () => {
     window.addEventListener('hashchange', handleHash);
     handleHash();
     return () => window.removeEventListener('hashchange', handleHash);
-  }, [siteCategories]);
+  }, [siteCategories, masterAccess]);
 
   const handleSelectCategory = (cat) => {
     setActiveCategory(cat);
