@@ -7,15 +7,19 @@ const SUPABASE_ANON_KEY = 'sb_publishable_F-ClcxM7_GSuDHfIgxTTvg_SB2q73_b';
 const DEFAULT_PROXY_URL = 'https://script.google.com/macros/s/AKfycbwAlKxDIShPTiubJbp-2jcHcADb_XkcSqRLmvMMGOajxzcHbcSPoSiU6R54WW-7cfWiwQ/exec';
 
 // Прокси активен только если:
-// 1. Пользователь сохранил свой URL в localStorage
-// 2. В URL страницы есть флаг ?proxy=true (для тестирования)
+// 1. В localStorage не записано 'none'
+// 2. В URL страницы нет флага ?proxy=false
 const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-const PROXY_URL = typeof window !== 'undefined' 
-  ? (localStorage.getItem('supabase_proxy') || DEFAULT_PROXY_URL) 
-  : null;
+const savedProxy = typeof window !== 'undefined' ? localStorage.getItem('supabase_proxy') : null;
+
+const PROXY_URL = (savedProxy === 'none' || params?.get('proxy') === 'false') 
+  ? null 
+  : (savedProxy || DEFAULT_PROXY_URL);
 
 if (PROXY_URL) {
   console.log('Supabase Proxy Active:', PROXY_URL);
+} else {
+  console.log('Supabase Direct Connection (No Proxy)');
 }
 
 /**
@@ -65,8 +69,18 @@ const customFetch = async (url, options = {}) => {
 
     const response = await fetch(proxyUrl.toString(), proxyOptions);
     
-    // GAS might return a 200 even for errors, so we'll just return the response as is
-    // and let supabase-js handle the status code in the body if the proxy is transparent.
+    // Проверка на ошибку квоты GAS
+    const clonedResponse = response.clone();
+    try {
+      const text = await clonedResponse.text();
+      if (text.includes('Превышена квота') || text.includes('Bandwidth quota exceeded')) {
+        console.warn('Proxy Quota Exceeded. Falling back to direct fetch...');
+        return fetch(url, options);
+      }
+    } catch (e) {
+      // Игнорируем ошибки парсинга текста
+    }
+
     return response;
   } catch (err) {
     console.error('Proxy Fetch Error:', err);
@@ -100,6 +114,8 @@ export const testConnection = async () => {
 export const setSupabaseProxy = (url) => {
   if (url && url.trim()) {
     localStorage.setItem('supabase_proxy', url.trim());
+  } else if (url === 'none') {
+    localStorage.setItem('supabase_proxy', 'none');
   } else {
     localStorage.removeItem('supabase_proxy');
   }

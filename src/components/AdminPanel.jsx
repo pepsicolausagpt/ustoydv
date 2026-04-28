@@ -22,12 +22,14 @@ export default function AdminPanel({ onExit, masterAccess }) {
   const [showProxyHelp, setShowProxyHelp] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('checking'); // 'checking', 'online', 'offline'
   const [connectionError, setConnectionError] = useState('');
+  const [isDirectMode, setIsDirectMode] = useState(localStorage.getItem('supabase_proxy') === 'none');
 
   // Сохраняем дефолтный прокси в localStorage, если он еще не задан, 
   // чтобы он работал и после удаления ?proxy=true из URL
   useEffect(() => {
     if (!localStorage.getItem('supabase_proxy')) {
       localStorage.setItem('supabase_proxy', 'https://script.google.com/macros/s/AKfycbwAlKxDIShPTiubJbp-2jcHcADb_XkcSqRLmvMMGOajxzcHbcSPoSiU6R54WW-7cfWiwQ/exec');
+      setIsDirectMode(false);
     }
   }, []);
 
@@ -467,29 +469,36 @@ export default function AdminPanel({ onExit, masterAccess }) {
 
           {showProxyHelp && (
             <div style={{ marginTop: '16px', padding: '12px', background: '#f8f9fa', borderRadius: '8px', fontSize: '13px' }}>
-              <p style={{ marginBottom: '8px', color: '#444' }}><b>Прокси активен по умолчанию.</b> Если база данных все еще недоступна, вы можете указать другой URL:</p>
+              <p style={{ marginBottom: '8px', color: '#444' }}><b>Прокси:</b> Если база данных недоступна, укажите URL прокси или выключите его (если используете VPN).</p>
               <input 
                 type="text" 
                 placeholder="https://script.google.com/macros/s/..." 
-                value={proxyInput}
+                value={proxyInput === 'none' ? '' : proxyInput}
                 onChange={e => setProxyInput(e.target.value)}
                 style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd', marginBottom: '8px', fontSize: '12px' }}
               />
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 <button 
                   onClick={() => setSupabaseProxy(proxyInput)}
                   style={{ flex: 1, padding: '8px', background: '#4CAF50', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
                 >
-                  Сохранить и обновить
+                  Применить прокси
                 </button>
-                {localStorage.getItem('supabase_proxy') && (
-                  <button 
-                    onClick={() => setSupabaseProxy('')}
-                    style={{ padding: '8px', background: '#f44336', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
-                  >
-                    Сброс
-                  </button>
-                )}
+                <button 
+                  onClick={() => setSupabaseProxy('none')}
+                  style={{ flex: 1, padding: '8px', background: '#2196F3', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                >
+                  Без прокси (VPN)
+                </button>
+                <button 
+                  onClick={() => {
+                    localStorage.removeItem('supabase_proxy');
+                    window.location.reload();
+                  }}
+                  style={{ padding: '8px', background: '#9e9e9e', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                >
+                  Сброс
+                </button>
               </div>
             </div>
           )}
@@ -546,6 +555,19 @@ export default function AdminPanel({ onExit, masterAccess }) {
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', background: '#fff', padding: '6px 12px', borderRadius: '20px', border: '1px solid #e2e8f0' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isDirectMode ? '#3b82f6' : '#9333ea' }}></div>
+                <span style={{ color: '#64748b' }}>
+                  {isDirectMode ? 'Режим: Напрямую (VPN)' : 'Режим: Прокси'}
+                </span>
+                <button 
+                  onClick={() => setSupabaseProxy(isDirectMode ? '' : 'none')}
+                  style={{ border: 'none', background: 'none', color: '#6366f1', cursor: 'pointer', textDecoration: 'underline', padding: 0, marginLeft: '4px', fontSize: '11px' }}
+                >
+                  [изменить]
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', background: '#fff', padding: '6px 12px', borderRadius: '20px', border: '1px solid #e2e8f0' }}>
                 <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: connectionStatus === 'online' ? '#22c55e' : (connectionStatus === 'offline' ? '#ef4444' : '#eab308') }}></div>
                 <span style={{ color: '#64748b' }}>
                   {connectionStatus === 'online' ? 'База данных: OK' : (connectionStatus === 'offline' ? 'База данных: ОШИБКА' : 'Проверка связи...')}
@@ -567,10 +589,24 @@ export default function AdminPanel({ onExit, masterAccess }) {
           )}
 
           <section style={{ background: '#fff', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
-            <h2 style={{ marginBottom: '8px' }}>1. Шапка Прайса</h2>
-            <p style={{ color: '#666', marginBottom: '24px', fontSize: '14px' }}>
-              Здесь вы можете изменить дату обновления прайс-листа и текстовую информацию о зонах доставки, которая отображается в самом верху страницы «Прайс».
-            </p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+              <div>
+                <h2 style={{ marginBottom: '8px' }}>1. Шапка Прайса</h2>
+                <p style={{ color: '#666', fontSize: '14px', margin: 0 }}>
+                  Здесь вы можете изменить дату обновления прайс-листа и текстовую информацию о зонах доставки.
+                </p>
+              </div>
+              <button 
+                onClick={() => {
+                  if (window.confirm('Восстановить текст в шапке по умолчанию?')) {
+                    setPriceHeader(DEFAULT_HEADER);
+                  }
+                }}
+                style={{ padding: '8px 16px', background: '#f1f5f9', border: '1px solid #e2e8f0', borderRadius: '6px', cursor: 'pointer', fontSize: '12px', color: '#475569' }}
+              >
+                Восстановить стандартный текст
+              </button>
+            </div>
             <div style={{ marginBottom: '20px' }}>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', color: '#555', marginBottom: '6px' }}>Дата прайса</label>
               <input type="text" value={priceHeader?.date || ''} onChange={e => setPriceHeader(prev => ({ ...prev, date: e.target.value }))} style={{ width: '260px', padding: '10px', borderRadius: '6px', border: '1px solid #ccc' }} />
