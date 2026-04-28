@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, setSupabaseProxy } from '../lib/supabase';
 import { categoriesParams as defaultCategories } from '../data/categories';
 import { priceSections as defaultPriceSections } from '../data/priceTable';
 
@@ -18,6 +18,8 @@ export default function AdminPanel({ onExit, masterAccess }) {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [confirmDeletePrice, setConfirmDeletePrice] = useState(null);
   const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false);
+  const [proxyInput, setProxyInput] = useState(localStorage.getItem('supabase_proxy') || 'https://script.google.com/macros/s/AKfycbzENk9aNITI9xK_M6Q_rZb0RdOv9tTWkQq5jK-VyHPDTYSnfZBeQivvboNVq60g1N4SEw/exec');
+  const [showProxyHelp, setShowProxyHelp] = useState(false);
 
   // Auto-login logic for master access link
   useEffect(() => {
@@ -34,8 +36,11 @@ export default function AdminPanel({ onExit, masterAccess }) {
           if (error) {
             setError('Ошибка автоматического входа: ' + error.message);
           } else {
-            // Clean URL after successful auto-login
-            window.history.replaceState({}, document.title, window.location.pathname);
+            // Wait a bit to ensure session is registered, then clean URL
+            setTimeout(() => {
+              const cleanUrl = window.location.origin + window.location.pathname + '#admin';
+              window.history.replaceState({}, document.title, cleanUrl);
+            }, 1000);
           }
         } catch (err) {
           setError('Непредвиденная ошибка при авто-входе');
@@ -419,6 +424,44 @@ export default function AdminPanel({ onExit, masterAccess }) {
             </button>
           </form>
         )}
+
+        <div style={{ marginTop: '24px', borderTop: '1px solid #eee', paddingTop: '16px' }}>
+          <button 
+            onClick={() => setShowProxyHelp(!showProxyHelp)}
+            style={{ background: 'none', border: 'none', color: '#666', fontSize: '12px', cursor: 'pointer', textDecoration: 'underline', width: '100%', textAlign: 'center' }}
+          >
+            {showProxyHelp ? 'Скрыть настройки прокси' : 'Не удается войти? Настройте прокси'}
+          </button>
+
+          {showProxyHelp && (
+            <div style={{ marginTop: '16px', padding: '12px', background: '#f8f9fa', borderRadius: '8px', fontSize: '13px' }}>
+              <p style={{ marginBottom: '8px', color: '#444' }}>Если сайт Supabase заблокирован, вставьте URL вашего Google Script Proxy:</p>
+              <input 
+                type="text" 
+                placeholder="https://script.google.com/macros/s/..." 
+                value={proxyInput}
+                onChange={e => setProxyInput(e.target.value)}
+                style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid #ddd', marginBottom: '8px', fontSize: '12px' }}
+              />
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  onClick={() => setSupabaseProxy(proxyInput)}
+                  style={{ flex: 1, padding: '8px', background: '#4CAF50', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                >
+                  Сохранить и обновить
+                </button>
+                {localStorage.getItem('supabase_proxy') && (
+                  <button 
+                    onClick={() => setSupabaseProxy('')}
+                    style={{ padding: '8px', background: '#f44336', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}
+                  >
+                    Сброс
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
         
         <button onClick={onExit} style={{ marginTop: '20px', width: '100%', padding: '12px', background: 'transparent', border: '1px solid #ccc', borderRadius: '8px', cursor: 'pointer' }}>
           Вернуться на сайт
@@ -431,13 +474,14 @@ export default function AdminPanel({ onExit, masterAccess }) {
     <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'sans-serif' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
         <h1>Панель Управления Сайтом</h1>
-        <div>
-          <button onClick={onExit} style={{ marginRight: '16px', padding: '10px 20px', cursor: 'pointer' }}>Вернуться на сайт</button>
-          <button onClick={handleLogout} style={{ padding: '10px 20px', cursor: 'pointer' }}>Выйти</button>
-        </div>
       </div>
 
-      {!categoriesData && !pricesData ? (
+      {loading && !categoriesData && !pricesData ? (
+        <div style={{ padding: '100px', textAlign: 'center', background: '#fff', borderRadius: '16px' }}>
+          <div className="admin-loader"></div>
+          <p style={{ marginTop: '20px', color: '#666' }}>Загрузка данных из базы...</p>
+        </div>
+      ) : !categoriesData && !pricesData ? (
         <div style={{ padding: '40px', background: '#fff', borderRadius: '16px', textAlign: 'center' }}>
           <h2>База данных пуста</h2>
           <p>Нажмите кнопку ниже, чтобы загрузить текущие данные сайта в базу.</p>
