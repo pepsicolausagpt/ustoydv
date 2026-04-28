@@ -7,14 +7,14 @@ const SUPABASE_ANON_KEY = 'sb_publishable_F-ClcxM7_GSuDHfIgxTTvg_SB2q73_b';
 const DEFAULT_PROXY_URL = 'https://script.google.com/macros/s/AKfycbwAlKxDIShPTiubJbp-2jcHcADb_XkcSqRLmvMMGOajxzcHbcSPoSiU6R54WW-7cfWiwQ/exec';
 
 // Прокси активен только если:
-// 1. В localStorage не записано 'none'
-// 2. В URL страницы нет флага ?proxy=false
+// 1. В localStorage явно указан URL прокси (не 'none')
+// 2. В URL страницы есть флаг ?proxy=true
 const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
 const savedProxy = typeof window !== 'undefined' ? localStorage.getItem('supabase_proxy') : null;
 
-const PROXY_URL = (savedProxy === 'none' || params?.get('proxy') === 'false') 
-  ? null 
-  : (savedProxy || DEFAULT_PROXY_URL);
+const PROXY_URL = (params?.get('proxy') === 'true') 
+  ? DEFAULT_PROXY_URL 
+  : (savedProxy && savedProxy !== 'none' ? savedProxy : null);
 
 if (PROXY_URL) {
   console.log('Supabase Proxy Active:', PROXY_URL);

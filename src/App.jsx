@@ -12,7 +12,7 @@ import {
   PRICE_DELIVERY_ZONE2,
   PRICE_DELIVERY_NOTES
 } from './data/priceTable.js';
-import { supabase } from './lib/supabase.js';
+import { fetchDb } from './lib/githubData.js';
 import AdminPanel from './components/AdminPanel.jsx';
 
 const SvgIcon = ({ path, size = 24 }) => (
@@ -683,46 +683,40 @@ const App = () => {
 
   const fetchSiteData = async () => {
     try {
-      const { data, error } = await supabase.from('site_content').select('*');
-      if (error) {
-        console.error('Error fetching site data:', error);
-        return;
+      const data = await fetchDb();
+      if (!data) return;
+
+      if (data.categories) {
+        // Убираем возможные лишние слеши в путях картинок
+        const sanitized = JSON.parse(JSON.stringify(data.categories).replace(/\"img\":\"\//g, '"img":"'));
+        setSiteCategories(sanitized);
       }
-      
-      if (data) {
-        const cat = data.find(d => d.key === 'categories');
-        const prc = data.find(d => d.key === 'prices');
-        const hdr = data.find(d => d.key === 'price_header');
 
-        if (cat && cat.content) {
-          const sanitized = JSON.parse(JSON.stringify(cat.content).replace(/\"img\":\"\//g, '"img":"'));
-          setSiteCategories(sanitized);
-        }
-
-        if (prc && Array.isArray(prc.content)) {
-          const mergedPrices = priceSections.map(defaultSec => {
-            const dbSec = prc.content.find(s => s.id === defaultSec.id);
-            if (!dbSec) return defaultSec;
+      if (data.prices && Array.isArray(data.prices)) {
+        const mergedPrices = priceSections.map(defaultSec => {
+          const dbSec = data.prices.find(s => s.id === defaultSec.id);
+          if (!dbSec) return defaultSec;
+          
+          const mergedRows = defaultSec.rows.map(defaultRow => {
+            const dbRow = dbSec.rows?.find(r => r.id === defaultRow.id);
+            if (!dbRow) return defaultRow;
             
-            const mergedRows = defaultSec.rows.map(defaultRow => {
-              const dbRow = dbSec.rows?.find(r => r.id === defaultRow.id);
-              if (!dbRow) return defaultRow;
-              
-              return {
-                ...defaultRow,
-                ...dbRow,
-                complexHeaders: dbRow.complexHeaders || defaultRow.complexHeaders,
-                complexSubHeaders: dbRow.complexSubHeaders || defaultRow.complexSubHeaders,
-                hasComplexTable: dbRow.hasComplexTable !== undefined ? dbRow.hasComplexTable : defaultRow.hasComplexTable
-              };
-            });
-
-            return { ...defaultSec, ...dbSec, rows: mergedRows };
+            return {
+              ...defaultRow,
+              ...dbRow,
+              complexHeaders: dbRow.complexHeaders || defaultRow.complexHeaders,
+              complexSubHeaders: dbRow.complexSubHeaders || defaultRow.complexSubHeaders,
+              hasComplexTable: dbRow.hasComplexTable !== undefined ? dbRow.hasComplexTable : defaultRow.hasComplexTable
+            };
           });
-          setSitePrices(mergedPrices);
-        }
 
-        if (hdr && hdr.content) setPriceHeader(hdr.content);
+          return { ...defaultSec, ...dbSec, rows: mergedRows };
+        });
+        setSitePrices(mergedPrices);
+      }
+
+      if (data.price_header) {
+        setPriceHeader(data.price_header);
       }
     } catch (err) {
       console.error('Unexpected error fetching site data:', err);
