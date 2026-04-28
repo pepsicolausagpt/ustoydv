@@ -10,7 +10,18 @@ import {
 import { categoriesParams as defaultCategories } from '../data/categories';
 import { priceSections as defaultPriceSections } from '../data/priceTable';
 
-export default function AdminPanel({ onExit, masterAccess }) {
+const ADMIN_PASS_HASH = '9f2147ca22b6db2eecfecafd915d76d3e4f92a514fdca437797d2d1165483ace';
+
+function verifyPassword(pass) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(pass);
+  return crypto.subtle.digest('SHA-256', data).then(buf => {
+    const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    return hash === ADMIN_PASS_HASH;
+  });
+}
+
+export default function AdminPanel({ onExit }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [password, setPassword] = useState('');
   const [githubToken, setGithubTokenState] = useState(getGithubToken() || '');
@@ -54,34 +65,12 @@ export default function AdminPanel({ onExit, masterAccess }) {
     }
   }, [githubToken]);
 
-  // Авто-вход и захват токена из URL
-  useEffect(() => {
-    // 1. Проверяем токен в URL (?token=ghp_...)
-    const urlParams = new URLSearchParams(window.location.search);
-    const tokenFromUrl = urlParams.get('token') || urlParams.get('key');
-    
-    if (tokenFromUrl && (tokenFromUrl.startsWith('ghp_') || tokenFromUrl.startsWith('github_pat_'))) {
-      setGithubToken(tokenFromUrl);
-      setGithubTokenState(tokenFromUrl);
-      setTokenValid(true);
-      
-      // Очищаем URL от токена сразу
-      const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
-      window.history.replaceState({}, document.title, cleanUrl);
-      
-      setSaveMessage('Доступ настроен успешно!');
-      setTimeout(() => setSaveMessage(''), 3000);
-    }
 
-    if (masterAccess) {
-      setIsLoggedIn(true);
-      fetchData();
-    }
-  }, [masterAccess]);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (password === 'ustroy') {
+    const isValid = await verifyPassword(password);
+    if (isValid) {
       setIsLoggedIn(true);
       fetchData();
     } else {
@@ -212,7 +201,7 @@ export default function AdminPanel({ onExit, masterAccess }) {
         name: 'Новое название',
         desc: '',
         price: '0 руб',
-        img: 'cat_truck.png'
+        img: 'cat_truck.jpg'
       });
       return newData;
     });
