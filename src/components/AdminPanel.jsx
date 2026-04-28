@@ -21,6 +21,14 @@ export default function AdminPanel({ onExit, masterAccess }) {
   const [proxyInput, setProxyInput] = useState(localStorage.getItem('supabase_proxy') || 'https://script.google.com/macros/s/AKfycbzENk9aNITI9xK_M6Q_rZb0RdOv9tTWkQq5jK-VyHPDTYSnfZBeQivvboNVq60g1N4SEw/exec');
   const [showProxyHelp, setShowProxyHelp] = useState(false);
 
+  // Сохраняем дефолтный прокси в localStorage, если он еще не задан, 
+  // чтобы он работал и после удаления ?proxy=true из URL
+  useEffect(() => {
+    if (!localStorage.getItem('supabase_proxy')) {
+      localStorage.setItem('supabase_proxy', 'https://script.google.com/macros/s/AKfycbzENk9aNITI9xK_M6Q_rZb0RdOv9tTWkQq5jK-VyHPDTYSnfZBeQivvboNVq60g1N4SEw/exec');
+    }
+  }, []);
+
   // Auto-login logic for master access link
   useEffect(() => {
     if (masterAccess && !session && !isAutoLoggingIn) {
@@ -441,7 +449,7 @@ export default function AdminPanel({ onExit, masterAccess }) {
 
           {showProxyHelp && (
             <div style={{ marginTop: '16px', padding: '12px', background: '#f8f9fa', borderRadius: '8px', fontSize: '13px' }}>
-              <p style={{ marginBottom: '8px', color: '#444' }}>Если сайт Supabase заблокирован, вставьте URL вашего Google Script Proxy:</p>
+              <p style={{ marginBottom: '8px', color: '#444' }}><b>Прокси активен по умолчанию.</b> Если база данных все еще недоступна, вы можете указать другой URL:</p>
               <input 
                 type="text" 
                 placeholder="https://script.google.com/macros/s/..." 

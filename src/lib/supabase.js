@@ -10,7 +10,13 @@ const DEFAULT_PROXY_URL = 'https://script.google.com/macros/s/AKfycbzENk9aNITI9x
 // 1. Пользователь сохранил свой URL в localStorage
 // 2. В URL страницы есть флаг ?proxy=true (для тестирования)
 const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-const PROXY_URL = typeof window !== 'undefined' ? (localStorage.getItem('supabase_proxy') || (params?.get('proxy') === 'true' ? DEFAULT_PROXY_URL : null)) : null;
+const PROXY_URL = typeof window !== 'undefined' 
+  ? (localStorage.getItem('supabase_proxy') || DEFAULT_PROXY_URL) 
+  : null;
+
+if (PROXY_URL) {
+  console.log('Supabase Proxy Active:', PROXY_URL);
+}
 
 /**
  * Кастомный fetch для перенаправления запросов через Google Apps Script Proxy.
