@@ -50,8 +50,8 @@ export const saveToGithub = async (content) => {
   const path = DB_PATH;
   const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`;
 
-  // 1. Получаем текущий SHA файла
-  const getFileResponse = await fetch(url, {
+  // 1. Получаем текущий SHA файла именно из ветки main
+  const getFileResponse = await fetch(`${url}?ref=main`, {
     headers: { 'Authorization': `token ${token}` }
   });
   
