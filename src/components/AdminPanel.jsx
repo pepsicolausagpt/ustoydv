@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { supabase, setSupabaseProxy } from '../lib/supabase';
+import { supabase, setSupabaseProxy, testConnection } from '../lib/supabase';
 import { categoriesParams as defaultCategories } from '../data/categories';
 import { priceSections as defaultPriceSections } from '../data/priceTable';
 
@@ -18,14 +18,16 @@ export default function AdminPanel({ onExit, masterAccess }) {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [confirmDeletePrice, setConfirmDeletePrice] = useState(null);
   const [isAutoLoggingIn, setIsAutoLoggingIn] = useState(false);
-  const [proxyInput, setProxyInput] = useState(localStorage.getItem('supabase_proxy') || 'https://script.google.com/macros/s/AKfycbzENk9aNITI9xK_M6Q_rZb0RdOv9tTWkQq5jK-VyHPDTYSnfZBeQivvboNVq60g1N4SEw/exec');
+  const [proxyInput, setProxyInput] = useState(localStorage.getItem('supabase_proxy') || 'https://script.google.com/macros/s/AKfycbwAlKxDIShPTiubJbp-2jcHcADb_XkcSqRLmvMMGOajxzcHbcSPoSiU6R54WW-7cfWiwQ/exec');
   const [showProxyHelp, setShowProxyHelp] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState('checking'); // 'checking', 'online', 'offline'
+  const [connectionError, setConnectionError] = useState('');
 
   // Сохраняем дефолтный прокси в localStorage, если он еще не задан, 
   // чтобы он работал и после удаления ?proxy=true из URL
   useEffect(() => {
     if (!localStorage.getItem('supabase_proxy')) {
-      localStorage.setItem('supabase_proxy', 'https://script.google.com/macros/s/AKfycbzENk9aNITI9xK_M6Q_rZb0RdOv9tTWkQq5jK-VyHPDTYSnfZBeQivvboNVq60g1N4SEw/exec');
+      localStorage.setItem('supabase_proxy', 'https://script.google.com/macros/s/AKfycbwAlKxDIShPTiubJbp-2jcHcADb_XkcSqRLmvMMGOajxzcHbcSPoSiU6R54WW-7cfWiwQ/exec');
     }
   }, []);
 
@@ -118,6 +120,22 @@ export default function AdminPanel({ onExit, masterAccess }) {
   const handleLogout = async () => {
     await supabase.auth.signOut();
   };
+
+  const checkConnection = async () => {
+    setConnectionStatus('checking');
+    const result = await testConnection();
+    if (result.success) {
+      setConnectionStatus('online');
+      setConnectionError('');
+    } else {
+      setConnectionStatus('offline');
+      setConnectionError(result.error);
+    }
+  };
+
+  useEffect(() => {
+    if (session) checkConnection();
+  }, [session]);
 
   const fetchData = async () => {
     setLoading(true);
@@ -486,33 +504,50 @@ export default function AdminPanel({ onExit, masterAccess }) {
 
   return (
     <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'sans-serif' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-        <h1>Панель Управления Сайтом</h1>
-      </div>
-
-      {loading && !categoriesData && !pricesData ? (
-        <div style={{ padding: '100px', textAlign: 'center', background: '#fff', borderRadius: '16px' }}>
-          <div className="admin-loader"></div>
-          <p style={{ marginTop: '20px', color: '#666' }}>Загрузка данных из базы...</p>
-        </div>
-      ) : !categoriesData && !pricesData ? (
-        <div style={{ padding: '40px', background: '#fff', borderRadius: '16px', textAlign: 'center' }}>
-          <h2>База данных пуста</h2>
-          <p>Нажмите кнопку ниже, чтобы загрузить текущие данные сайта в базу.</p>
-          <button onClick={handleInitialize} disabled={loading} style={{ marginTop: '20px', padding: '12px 24px', background: '#007BFF', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
-            {loading ? 'Инициализация...' : 'Инициализировать базу данных'}
-          </button>
-        </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
-          <div style={{ position: 'sticky', top: 0, background: '#f8fafc', padding: '20px 0', zIndex: 100, borderBottom: '1px solid #ccc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <button onClick={handleSave} disabled={isSaving} style={{ padding: '14px 32px', background: '#FF6B00', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>
+          <div style={{ 
+            position: 'sticky', 
+            top: 0, 
+            background: '#f8fafc', 
+            padding: '16px 24px', 
+            zIndex: 100, 
+            borderBottom: '1px solid #e2e8f0', 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            borderRadius: '12px',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+            marginBottom: '20px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <button onClick={handleSave} disabled={isSaving} style={{ padding: '12px 24px', background: '#FF6B00', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '15px' }}>
                 {isSaving ? 'Сохранение...' : 'Сохранить изменения на сайте'}
               </button>
-              {saveMessage && <span style={{ marginLeft: '16px', color: saveMessage.includes('Ошибка') ? 'red' : 'green', fontWeight: 'bold' }}>{saveMessage}</span>}
+              {saveMessage && <span style={{ color: saveMessage.includes('Ошибка') ? '#dc2626' : '#16a34a', fontWeight: 'bold', fontSize: '14px' }}>{saveMessage}</span>}
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', background: '#fff', padding: '6px 12px', borderRadius: '20px', border: '1px solid #e2e8f0' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: connectionStatus === 'online' ? '#22c55e' : (connectionStatus === 'offline' ? '#ef4444' : '#eab308') }}></div>
+                <span style={{ color: '#64748b' }}>
+                  {connectionStatus === 'online' ? 'База данных: OK' : (connectionStatus === 'offline' ? 'База данных: ОШИБКА' : 'Проверка связи...')}
+                </span>
+                {connectionStatus === 'offline' && (
+                  <button onClick={checkConnection} style={{ border: 'none', background: 'none', color: '#3b82f6', cursor: 'pointer', textDecoration: 'underline', padding: 0, marginLeft: '4px' }}>Повторить</button>
+                )}
+              </div>
+              <button onClick={handleLogout} style={{ padding: '8px 16px', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}>Выйти</button>
             </div>
           </div>
+
+          {connectionStatus === 'offline' && (
+            <div style={{ padding: '16px', background: '#fef2f2', border: '1px solid #fee2e2', borderRadius: '12px', color: '#991b1b', fontSize: '14px' }}>
+              <strong>Внимание: Нет связи с базой данных.</strong><br />
+              Возможно, ваш провайдер блокирует доступ к Supabase. Убедитесь, что прокси настроен верно или используйте VPN.<br />
+              <code style={{ fontSize: '12px', display: 'block', marginTop: '8px', padding: '8px', background: 'rgba(0,0,0,0.05)', borderRadius: '4px' }}>Ошибка: {connectionError}</code>
+            </div>
+          )}
 
           <section style={{ background: '#fff', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
             <h2 style={{ marginBottom: '8px' }}>1. Шапка Прайса</h2>

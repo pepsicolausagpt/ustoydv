@@ -4,7 +4,7 @@ const SUPABASE_URL = 'https://mcxhucgarmmvwdgqgdxb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_F-ClcxM7_GSuDHfIgxTTvg_SB2q73_b';
 
 // Ссылка на ваш Google Script Proxy (теперь используется только если включен режим прокси)
-const DEFAULT_PROXY_URL = 'https://script.google.com/macros/s/AKfycbzENk9aNITI9xK_M6Q_rZb0RdOv9tTWkQq5jK-VyHPDTYSnfZBeQivvboNVq60g1N4SEw/exec';
+const DEFAULT_PROXY_URL = 'https://script.google.com/macros/s/AKfycbwAlKxDIShPTiubJbp-2jcHcADb_XkcSqRLmvMMGOajxzcHbcSPoSiU6R54WW-7cfWiwQ/exec';
 
 // Прокси активен только если:
 // 1. Пользователь сохранил свой URL в localStorage
@@ -22,48 +22,55 @@ if (PROXY_URL) {
  * Кастомный fetch для перенаправления запросов через Google Apps Script Proxy.
  */
 const customFetch = async (url, options = {}) => {
-  // Если прокси не настроен, используем обычный fetch
   if (!PROXY_URL) return fetch(url, options);
 
   try {
     const urlObj = new URL(url);
-    // Для прокси нам нужен полный путь с параметрами
     const path = urlObj.pathname + urlObj.search;
     
     let token = '';
+    let apiKey = SUPABASE_ANON_KEY;
+    let prefer = '';
+
     if (options.headers) {
-      const auth = options.headers['Authorization'] || options.headers['authorization'];
-      if (auth && auth.startsWith('Bearer ')) {
-        token = auth.substring(7);
-      }
+      Object.entries(options.headers).forEach(([key, value]) => {
+        const lowerKey = key.toLowerCase();
+        if (lowerKey === 'authorization' && value.startsWith('Bearer ')) {
+          token = value.substring(7);
+        } else if (lowerKey === 'apikey') {
+          apiKey = value;
+        } else if (lowerKey === 'prefer') {
+          prefer = value;
+        }
+      });
     }
 
     const proxyUrl = new URL(PROXY_URL);
     proxyUrl.searchParams.set('path', path);
-    if (token) {
-      proxyUrl.searchParams.set('token', token);
-    }
+    proxyUrl.searchParams.set('method', options.method || 'GET');
+    proxyUrl.searchParams.set('apiKey', apiKey);
+    if (token) proxyUrl.searchParams.set('token', token);
+    if (prefer) proxyUrl.searchParams.set('prefer', prefer);
 
-    // ВАЖНО: Google Apps Script не поддерживает OPTIONS запросы (CORS preflight).
-    // Чтобы избежать ошибки, мы НЕ передаем кастомные заголовки (apikey, Authorization) в fetch.
-    // Ваш скрипт Google Script сам подставит нужные заголовки при запросе к Supabase.
     const proxyOptions = {
-      method: options.method || 'GET',
-      // Оставляем body если это POST/PUT
+      method: 'POST', // Always use POST to the proxy to avoid GET length limits and handle bodies
       body: options.body
     };
 
-    // Если есть тело запроса, указываем тип контента, который не триггерит OPTIONS (если возможно)
-    // Но для Supabase JSON обязателен, поэтому просто надеемся на отсутствие заголовков apikey/auth
     if (options.body) {
       proxyOptions.headers = {
-        'Content-Type': 'text/plain', // Используем text/plain чтобы избежать CORS preflight для JSON
+        'Content-Type': 'text/plain', // Simple request to avoid CORS preflight
       };
     }
 
-    return fetch(proxyUrl.toString(), proxyOptions);
+    const response = await fetch(proxyUrl.toString(), proxyOptions);
+    
+    // GAS might return a 200 even for errors, so we'll just return the response as is
+    // and let supabase-js handle the status code in the body if the proxy is transparent.
+    return response;
   } catch (err) {
     console.error('Proxy Fetch Error:', err);
+    // If proxy fails, try direct fetch as fallback (might be blocked, but better than nothing)
     return fetch(url, options);
   }
 };
@@ -73,6 +80,19 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     fetch: customFetch
   }
 });
+
+/**
+ * Тестирование соединения через прокси
+ */
+export const testConnection = async () => {
+  try {
+    const { data, error } = await supabase.from('site_content').select('key').limit(1);
+    if (error) throw error;
+    return { success: true, data };
+  } catch (err) {
+    return { success: false, error: err.message };
+  }
+};
 
 /**
  * Утилита для установки прокси и обновления приложения
