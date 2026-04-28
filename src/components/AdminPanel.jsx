@@ -504,6 +504,23 @@ export default function AdminPanel({ onExit, masterAccess }) {
 
   return (
     <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto', fontFamily: 'sans-serif' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+        <h1>Панель Управления Сайтом</h1>
+      </div>
+
+      {loading && !categoriesData && !pricesData ? (
+        <div style={{ padding: '100px', textAlign: 'center', background: '#fff', borderRadius: '16px' }}>
+          <div className="admin-loader"></div>
+          <p style={{ marginTop: '20px', color: '#666' }}>Загрузка данных из базы...</p>
+        </div>
+      ) : !categoriesData && !pricesData ? (
+        <div style={{ padding: '40px', background: '#fff', borderRadius: '16px', textAlign: 'center' }}>
+          <h2>База данных пуста</h2>
+          <p>Нажмите кнопку ниже, чтобы загрузить текущие данные сайта в базу.</p>
+          <button onClick={handleInitialize} disabled={loading} style={{ marginTop: '20px', padding: '12px 24px', background: '#007BFF', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>
+            {loading ? 'Инициализация...' : 'Инициализировать базу данных'}
+          </button>
+        </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
           <div style={{ 
