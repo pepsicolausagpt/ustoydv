@@ -457,7 +457,7 @@ export default function AdminPanel({ onExit }) {
                         <input type="file" accept="image/*" onChange={(e) => uploadImage(e.target.files[0], catIdx, itemIdx)} style={{ fontSize: '11px' }} />
                       </div>
                       <button onClick={() => removeCategoryItem(catIdx, itemIdx)} style={{ width: '100%', background: '#fee2e2', color: '#b00020', border: 'none', padding: '6px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
-                        {confirmDelete?.itemIdx === itemIdx ? 'Точно удалить?' : 'Удалить'}
+                        {confirmDelete?.catIdx === catIdx && confirmDelete?.itemIdx === itemIdx ? 'Точно удалить?' : 'Удалить'}
                       </button>
                     </div>
                   ))}
