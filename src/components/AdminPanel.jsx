@@ -10,7 +10,18 @@ import {
 import { categoriesParams as defaultCategories } from '../data/categories';
 import { priceSections as defaultPriceSections } from '../data/priceTable';
 
-export default function AdminPanel({ onExit, masterAccess }) {
+const ADMIN_PASS_HASH = '9f2147ca22b6db2eecfecafd915d76d3e4f92a514fdca437797d2d1165483ace';
+
+function verifyPassword(pass) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(pass);
+  return crypto.subtle.digest('SHA-256', data).then(buf => {
+    const hash = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    return hash === ADMIN_PASS_HASH;
+  });
+}
+
+export default function AdminPanel({ onExit }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [password, setPassword] = useState('');
   const [githubToken, setGithubTokenState] = useState(getGithubToken() || '');
@@ -54,34 +65,12 @@ export default function AdminPanel({ onExit, masterAccess }) {
     }
   }, [githubToken]);
 
-  // Авто-вход и захват токена из URL
-  useEffect(() => {
-    // 1. Проверяем токен в URL (?token=ghp_...)
-    const urlParams = new URLSearchParams(window.location.search);
-    const tokenFromUrl = urlParams.get('token') || urlParams.get('key');
-    
-    if (tokenFromUrl && (tokenFromUrl.startsWith('ghp_') || tokenFromUrl.startsWith('github_pat_'))) {
-      setGithubToken(tokenFromUrl);
-      setGithubTokenState(tokenFromUrl);
-      setTokenValid(true);
-      
-      // Очищаем URL от токена сразу
-      const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
-      window.history.replaceState({}, document.title, cleanUrl);
-      
-      setSaveMessage('Доступ настроен успешно!');
-      setTimeout(() => setSaveMessage(''), 3000);
-    }
 
-    if (masterAccess) {
-      setIsLoggedIn(true);
-      fetchData();
-    }
-  }, [masterAccess]);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    if (password === 'ustroy') {
+    const isValid = await verifyPassword(password);
+    if (isValid) {
       setIsLoggedIn(true);
       fetchData();
     } else {
@@ -212,7 +201,7 @@ export default function AdminPanel({ onExit, masterAccess }) {
         name: 'Новое название',
         desc: '',
         price: '0 руб',
-        img: 'cat_truck.png'
+        img: 'cat_truck.jpg'
       });
       return newData;
     });
@@ -296,6 +285,51 @@ export default function AdminPanel({ onExit, masterAccess }) {
         unit: 'шт.',
         note: ''
       });
+      return newData;
+    });
+  };
+
+  const updateComplexSubRow = (secIdx, rowIdx, subIdx, field, value) => {
+    setPricesData(prev => {
+      const newData = [...prev];
+      const section = { ...newData[secIdx], rows: [...newData[secIdx].rows] };
+      const row = { ...section.rows[rowIdx], rows: [...section.rows[rowIdx].rows] };
+      row.rows[subIdx] = { ...row.rows[subIdx], [field]: value };
+      section.rows[rowIdx] = row;
+      newData[secIdx] = section;
+      return newData;
+    });
+  };
+
+  const updateSimpleRowField = (secIdx, rowIdx, field, value) => {
+    setPricesData(prev => {
+      const newData = [...prev];
+      newData[secIdx] = { ...newData[secIdx], rows: [...newData[secIdx].rows] };
+      newData[secIdx].rows[rowIdx] = { ...newData[secIdx].rows[rowIdx], [field]: value };
+      return newData;
+    });
+  };
+
+  const addSimpleRow = (secIdx) => {
+    setPricesData(prev => {
+      const newData = [...prev];
+      newData[secIdx] = { ...newData[secIdx], rows: [...newData[secIdx].rows] };
+      newData[secIdx].rows.push({
+        id: `simple-${Date.now()}`,
+        name: 'Новая услуга',
+        price: '0',
+        unit: 'руб',
+        note: ''
+      });
+      return newData;
+    });
+  };
+
+  const removeSimpleRow = (secIdx, rowIdx) => {
+    setPricesData(prev => {
+      const newData = [...prev];
+      newData[secIdx] = { ...newData[secIdx], rows: [...newData[secIdx].rows] };
+      newData[secIdx].rows.splice(rowIdx, 1);
       return newData;
     });
   };
@@ -423,7 +457,7 @@ export default function AdminPanel({ onExit, masterAccess }) {
                         <input type="file" accept="image/*" onChange={(e) => uploadImage(e.target.files[0], catIdx, itemIdx)} style={{ fontSize: '11px' }} />
                       </div>
                       <button onClick={() => removeCategoryItem(catIdx, itemIdx)} style={{ width: '100%', background: '#fee2e2', color: '#b00020', border: 'none', padding: '6px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
-                        {confirmDelete?.itemIdx === itemIdx ? 'Точно удалить?' : 'Удалить'}
+                        {confirmDelete?.catIdx === catIdx && confirmDelete?.itemIdx === itemIdx ? 'Точно удалить?' : 'Удалить'}
                       </button>
                     </div>
                   ))}
@@ -487,7 +521,85 @@ export default function AdminPanel({ onExit, masterAccess }) {
                   </div>
                 );
               }
-              return null; // Упростил для краткости, можно добавить остальные таблицы
+              return (
+                <div key={section.id} style={{ marginBottom: '30px', padding: '20px', border: '1px solid #eee', borderRadius: '12px' }}>
+                  <h4 style={{ margin: '0 0 12px 0' }}>{section.title}</h4>
+                  {section.rows.map((row, ri) => {
+                    if (row.hasComplexTable && row.rows) {
+                      return (
+                        <div key={row.id || ri} style={{ marginBottom: '20px', padding: '12px', background: '#f8fafc', borderRadius: '8px' }}>
+                          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
+                            <strong style={{ fontSize: '13px' }}>{row.name}</strong>
+                            <input value={row.price || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'price', e.target.value)} style={{ width: '100px', fontSize: '11px', padding: '4px', border: '1px solid #ddd', borderRadius: '4px' }} />
+                            <span style={{ fontSize: '11px', color: '#666' }}>{row.unit}</span>
+                          </div>
+                          <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
+                              <thead>
+                                <tr style={{ background: '#e2e8f0' }}>
+                                  <th style={{ border: '1px solid #cbd5e1', padding: '4px', width: '30px' }}>№</th>
+                                  <th style={{ border: '1px solid #cbd5e1', padding: '4px' }}>Наименование</th>
+                                  <th style={{ border: '1px solid #cbd5e1', padding: '4px', width: '50px' }}>Кол-во</th>
+                                  <th style={{ border: '1px solid #cbd5e1', padding: '4px', width: '70px' }}>Ель м³</th>
+                                  <th style={{ border: '1px solid #cbd5e1', padding: '4px', width: '60px' }}>Ель шт.</th>
+                                  <th style={{ border: '1px solid #cbd5e1', padding: '4px', width: '70px' }}>Лист. м³</th>
+                                  <th style={{ border: '1px solid #cbd5e1', padding: '4px', width: '60px' }}>Лист. шт.</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {row.rows.map((sub, si) => {
+                                  if (sub.isGroup) {
+                                    return (
+                                      <tr key={si} style={{ background: '#FF6B00', color: '#fff' }}>
+                                        <td colSpan={7} style={{ border: '1px solid #cbd5e1', padding: '4px', fontWeight: 'bold', textAlign: 'center' }}>
+                                          <input value={sub.label} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 'label', e.target.value)} style={{ width: '60px', textAlign: 'center', border: 'none', background: 'transparent', color: '#fff', fontWeight: 'bold' }} />
+                                        </td>
+                                      </tr>
+                                    );
+                                  }
+                                  return (
+                                    <tr key={si}>
+                                      <td style={{ border: '1px solid #cbd5e1', padding: '2px', textAlign: 'center' }}>{sub.n}</td>
+                                      <td style={{ border: '1px solid #cbd5e1', padding: '0' }}>
+                                        <input value={sub.name} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 'name', e.target.value)} style={{ width: '100%', border: 'none', fontSize: '11px', padding: '4px' }} />
+                                      </td>
+                                      <td style={{ border: '1px solid #cbd5e1', padding: '0' }}>
+                                        <input value={sub.count || ''} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 'count', e.target.value)} style={{ width: '100%', border: 'none', textAlign: 'center', fontSize: '11px', padding: '4px' }} />
+                                      </td>
+                                      <td style={{ border: '1px solid #cbd5e1', padding: '0' }}>
+                                        <input value={sub.s_m3 || ''} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 's_m3', e.target.value)} style={{ width: '100%', border: 'none', textAlign: 'center', fontSize: '11px', padding: '4px' }} />
+                                      </td>
+                                      <td style={{ border: '1px solid #cbd5e1', padding: '0' }}>
+                                        <input value={sub.s_p || ''} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 's_p', e.target.value)} style={{ width: '100%', border: 'none', textAlign: 'center', fontSize: '11px', padding: '4px' }} />
+                                      </td>
+                                      <td style={{ border: '1px solid #cbd5e1', padding: '0' }}>
+                                        <input value={sub.l_m3 || ''} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 'l_m3', e.target.value)} style={{ width: '100%', border: 'none', textAlign: 'center', fontSize: '11px', padding: '4px' }} />
+                                      </td>
+                                      <td style={{ border: '1px solid #cbd5e1', padding: '0' }}>
+                                        <input value={sub.l_p || ''} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 'l_p', e.target.value)} style={{ width: '100%', border: 'none', textAlign: 'center', fontSize: '11px', padding: '4px' }} />
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div key={row.id || ri} style={{ display: 'grid', gridTemplateColumns: '1fr 100px 100px 1fr 30px', gap: '8px', alignItems: 'center', marginBottom: '8px', padding: '8px', background: '#fafafa', borderRadius: '6px' }}>
+                        <input value={row.name} onChange={(e) => updateSimpleRowField(secIdx, ri, 'name', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} />
+                        <input value={row.price || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'price', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', textAlign: 'center' }} />
+                        <input value={row.unit || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'unit', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} />
+                        <input value={row.note || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'note', e.target.value)} placeholder="Примечание" style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} />
+                        <button onClick={() => removeSimpleRow(secIdx, ri)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>✕</button>
+                      </div>
+                    );
+                  })}
+                  <button onClick={() => addSimpleRow(secIdx)} style={{ marginTop: '10px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить строку</button>
+                </div>
+              );
             })}
           </section>
         </div>
