@@ -278,26 +278,60 @@ export default function AdminPanel({ onExit }) {
     setPricesData(prev => {
       const newData = [...prev];
       const section = newData[secIdx];
-      newData[secIdx] = { ...section, rows: [...section.rows] };
+      const existingRows = section.rows || [];
       const isDelivery = section.type === 'delivery' || ['materials', 'soil', 'coal', 'firewood'].includes(section.id);
+      let newRow;
       if (isDelivery) {
         const colCount = (section.deliveryWeights || []).length;
-        newData[secIdx].rows.push({
+        newRow = {
           id: `price-${Date.now()}`,
           name: 'Новая позиция',
           price: '-',
           bag: '-',
           delivery: Array(colCount).fill('-')
-        });
+        };
       } else {
-        newData[secIdx].rows.push({
+        newRow = {
           id: `price-${Date.now()}`,
           name: 'Новая позиция',
           price: '0',
           unit: 'шт.',
           note: ''
-        });
+        };
       }
+      newData[secIdx] = { ...section, rows: [...existingRows, newRow] };
+      return newData;
+    });
+  };
+
+  const updateFootnote = (secIdx, fnIdx, value) => {
+    setPricesData(prev => {
+      const newData = [...prev];
+      const section = { ...newData[secIdx] };
+      const footnotes = [...(section.footnotes || [])];
+      footnotes[fnIdx] = value;
+      section.footnotes = footnotes;
+      newData[secIdx] = section;
+      return newData;
+    });
+  };
+
+  const addFootnote = (secIdx) => {
+    setPricesData(prev => {
+      const newData = [...prev];
+      const section = { ...newData[secIdx] };
+      section.footnotes = [...(section.footnotes || []), ''];
+      newData[secIdx] = section;
+      return newData;
+    });
+  };
+
+  const removeFootnote = (secIdx, fnIdx) => {
+    setPricesData(prev => {
+      const newData = [...prev];
+      const section = { ...newData[secIdx] };
+      section.footnotes = (section.footnotes || []).filter((_, i) => i !== fnIdx);
+      newData[secIdx] = section;
       return newData;
     });
   };
@@ -506,10 +540,10 @@ export default function AdminPanel({ onExit }) {
                           </tr>
                         </thead>
                         <tbody>
-                          {section.rows.map((row, ri) => (
+                          {(section.rows || []).map((row, ri) => (
                             <tr key={ri}>
                               <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>
-                                <input value={row.name} onChange={(e) => updatePriceTableRow(secIdx, ri, 'name', e.target.value)} style={{ width: '100%', border: 'none', fontSize: '11px' }} />
+                                <input value={row.name || ''} onChange={(e) => updatePriceTableRow(secIdx, ri, 'name', e.target.value)} style={{ width: '100%', border: 'none', fontSize: '11px' }} />
                               </td>
                               <td style={{ border: '1px solid #cbd5e1', padding: '0' }}>
                                 <input
@@ -551,7 +585,23 @@ export default function AdminPanel({ onExit }) {
                           ))}
                         </tbody>
                       </table>
-                      <button onClick={() => addPriceTableRow(secIdx)} style={{ marginTop: '10px', padding: '4px 12px', fontSize: '11px', cursor: 'pointer' }}>+ Добавить строку</button>
+                      <button onClick={() => addPriceTableRow(secIdx)} style={{ marginTop: '10px', padding: '4px 12px', fontSize: '11px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить строку</button>
+                    </div>
+                    {/* Примечания (footnotes) */}
+                    <div style={{ marginTop: '16px' }}>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#666' }}>Примечания к таблице</label>
+                      {(section.footnotes || []).map((fn, fnIdx) => (
+                        <div key={fnIdx} style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
+                          <input
+                            type="text"
+                            value={fn}
+                            onChange={(e) => updateFootnote(secIdx, fnIdx, e.target.value)}
+                            style={{ flex: 1, padding: '6px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '11px' }}
+                          />
+                          <button onClick={() => removeFootnote(secIdx, fnIdx)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontSize: '14px' }}>✕</button>
+                        </div>
+                      ))}
+                      <button onClick={() => addFootnote(secIdx)} style={{ padding: '4px 12px', fontSize: '11px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить примечание</button>
                     </div>
                   </div>
                 );
@@ -633,6 +683,24 @@ export default function AdminPanel({ onExit }) {
                     );
                   })}
                   <button onClick={() => addSimpleRow(secIdx)} style={{ marginTop: '10px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить строку</button>
+                  {/* Примечания (footnotes) */}
+                  {((section.footnotes && section.footnotes.length > 0) || true) && (
+                    <div style={{ marginTop: '16px' }}>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#666' }}>Примечания к таблице</label>
+                      {(section.footnotes || []).map((fn, fnIdx) => (
+                        <div key={fnIdx} style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
+                          <input
+                            type="text"
+                            value={fn}
+                            onChange={(e) => updateFootnote(secIdx, fnIdx, e.target.value)}
+                            style={{ flex: 1, padding: '6px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '11px' }}
+                          />
+                          <button onClick={() => removeFootnote(secIdx, fnIdx)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontSize: '14px' }}>✕</button>
+                        </div>
+                      ))}
+                      <button onClick={() => addFootnote(secIdx)} style={{ padding: '4px 12px', fontSize: '11px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить примечание</button>
+                    </div>
+                  )}
                 </div>
               );
             })}
