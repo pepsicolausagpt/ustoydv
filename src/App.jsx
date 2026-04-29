@@ -54,6 +54,13 @@ const App = () => {
             };
           });
 
+          // Include new rows added via admin that don't exist in defaults
+          if (dbSec.rows) {
+            const defaultRowIds = new Set(defaultSec.rows.map(r => r.id));
+            const newRows = dbSec.rows.filter(r => r.id && !defaultRowIds.has(r.id));
+            mergedRows.push(...newRows);
+          }
+
           return { ...defaultSec, ...dbSec, rows: mergedRows };
         });
         setSitePrices(mergedPrices);
