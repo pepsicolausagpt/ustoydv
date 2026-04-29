@@ -41,6 +41,23 @@ export const fetchDb = async () => {
 };
 
 /**
+ * Получение актуального SHA файла (без кеширования)
+ */
+const fetchCurrentSha = async (url, token) => {
+  const resp = await fetch(`${url}?ref=main&t=${Date.now()}`, {
+    headers: {
+      'Authorization': `token ${token}`,
+      'Cache-Control': 'no-cache, no-store',
+      'Pragma': 'no-cache',
+      'If-None-Match': '',
+    }
+  });
+  if (!resp.ok) return null;
+  const data = await resp.json();
+  return data.sha;
+};
+
+/**
  * Сохранение данных в GitHub
  */
 export const saveToGithub = async (content) => {
@@ -49,39 +66,40 @@ export const saveToGithub = async (content) => {
 
   const path = DB_PATH;
   const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/contents/${path}`;
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2))));
 
-  // 1. Получаем текущий SHA файла именно из ветки main
-  const getFileResponse = await fetch(`${url}?ref=main`, {
-    headers: { 'Authorization': `token ${token}` }
-  });
-  
-  let sha = null;
-  if (getFileResponse.ok) {
-    const fileData = await getFileResponse.json();
-    sha = fileData.sha;
+  const attempt = async () => {
+    const sha = await fetchCurrentSha(url, token);
+
+    const updateResponse = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: `Update data: ${new Date().toLocaleString()}`,
+        content: encoded,
+        sha: sha,
+        branch: 'main'
+      })
+    });
+
+    if (!updateResponse.ok) {
+      const errorData = await updateResponse.json();
+      throw new Error(errorData.message || 'Ошибка сохранения в GitHub');
+    }
+    return await updateResponse.json();
+  };
+
+  try {
+    return await attempt();
+  } catch (err) {
+    if (err.message && err.message.includes('does not match')) {
+      return await attempt();
+    }
+    throw err;
   }
-
-  // 2. Отправляем обновленный контент
-  const updateResponse = await fetch(url, {
-    method: 'PUT',
-    headers: {
-      'Authorization': `token ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      message: `Update data: ${new Date().toLocaleString()}`,
-      content: btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2)))), // Правильная обработка UTF-8 для btoa
-      sha: sha, // SHA обязателен для обновления существующего файла
-      branch: 'main'
-    })
-  });
-
-  if (!updateResponse.ok) {
-    const errorData = await updateResponse.json();
-    throw new Error(errorData.message || 'Ошибка сохранения в GitHub');
-  }
-
-  return await updateResponse.json();
 };
 
 /**
