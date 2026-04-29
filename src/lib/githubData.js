@@ -44,17 +44,20 @@ export const fetchDb = async () => {
  * Получение актуального SHA файла (без кеширования)
  */
 const fetchCurrentSha = async (url, token) => {
-  const resp = await fetch(`${url}?ref=main&t=${Date.now()}`, {
-    headers: {
-      'Authorization': `token ${token}`,
-      'Cache-Control': 'no-cache, no-store',
-      'Pragma': 'no-cache',
-      'If-None-Match': '',
-    }
-  });
-  if (!resp.ok) return null;
-  const data = await resp.json();
-  return data.sha;
+  try {
+    const resp = await fetch(`${url}?ref=main&t=${Date.now()}`, {
+      headers: {
+        'Authorization': `token ${token}`,
+        'If-None-Match': '',
+      }
+    });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    return data.sha;
+  } catch (err) {
+    console.error('fetchCurrentSha error:', err);
+    return null;
+  }
 };
 
 /**
@@ -70,6 +73,9 @@ export const saveToGithub = async (content) => {
 
   const attempt = async () => {
     const sha = await fetchCurrentSha(url, token);
+    if (!sha) {
+      throw new Error('Не удалось получить SHA файла. Проверьте токен и подключение к интернету.');
+    }
 
     const updateResponse = await fetch(url, {
       method: 'PUT',
@@ -92,13 +98,17 @@ export const saveToGithub = async (content) => {
     return await updateResponse.json();
   };
 
-  try {
-    return await attempt();
-  } catch (err) {
-    if (err.message && err.message.includes('does not match')) {
+  const MAX_RETRIES = 3;
+  for (let i = 0; i < MAX_RETRIES; i++) {
+    try {
       return await attempt();
+    } catch (err) {
+      if (err.message && err.message.includes('does not match') && i < MAX_RETRIES - 1) {
+        await new Promise(r => setTimeout(r, 1000));
+        continue;
+      }
+      throw err;
     }
-    throw err;
   }
 };
 
