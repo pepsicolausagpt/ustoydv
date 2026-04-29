@@ -94,13 +94,41 @@ export default function AdminPanel({ onExit }) {
     setLoading(false);
   };
 
+  const mergePricesWithDefaults = (dbPrices) => {
+    if (!dbPrices || !Array.isArray(dbPrices)) return defaultPriceSections;
+    return defaultPriceSections.map(defaultSec => {
+      const dbSec = dbPrices.find(s => s.id === defaultSec.id);
+      if (!dbSec) return defaultSec;
+
+      const mergedRows = defaultSec.rows.map(defaultRow => {
+        const dbRow = dbSec.rows?.find(r => r.id === defaultRow.id);
+        if (!dbRow) return defaultRow;
+        return {
+          ...defaultRow,
+          ...dbRow,
+          complexHeaders: dbRow.complexHeaders || defaultRow.complexHeaders,
+          complexSubHeaders: dbRow.complexSubHeaders || defaultRow.complexSubHeaders,
+          hasComplexTable: dbRow.hasComplexTable !== undefined ? dbRow.hasComplexTable : defaultRow.hasComplexTable
+        };
+      });
+
+      if (dbSec.rows) {
+        const defaultRowIds = new Set(defaultSec.rows.map(r => r.id));
+        const newRows = dbSec.rows.filter(r => r.id && !defaultRowIds.has(r.id));
+        mergedRows.push(...newRows);
+      }
+
+      return { ...defaultSec, ...dbSec, rows: mergedRows };
+    });
+  };
+
   const fetchData = async () => {
     setLoading(true);
     try {
       const data = await fetchDb();
       if (data) {
         setCategoriesData(data.categories || defaultCategories);
-        setPricesData(data.prices || defaultPriceSections);
+        setPricesData(mergePricesWithDefaults(data.prices));
         setPriceHeader(data.price_header || DEFAULT_HEADER);
       }
     } catch (err) {
