@@ -277,14 +277,27 @@ export default function AdminPanel({ onExit }) {
   const addPriceTableRow = (secIdx) => {
     setPricesData(prev => {
       const newData = [...prev];
-      newData[secIdx] = { ...newData[secIdx], rows: [...newData[secIdx].rows] };
-      newData[secIdx].rows.push({
-        id: `price-${Date.now()}`,
-        name: 'Новая позиция',
-        price: '0',
-        unit: 'шт.',
-        note: ''
-      });
+      const section = newData[secIdx];
+      newData[secIdx] = { ...section, rows: [...section.rows] };
+      const isDelivery = section.type === 'delivery' || ['materials', 'soil', 'coal', 'firewood'].includes(section.id);
+      if (isDelivery) {
+        const colCount = (section.deliveryWeights || []).length;
+        newData[secIdx].rows.push({
+          id: `price-${Date.now()}`,
+          name: 'Новая позиция',
+          price: '-',
+          bag: '-',
+          delivery: Array(colCount).fill('-')
+        });
+      } else {
+        newData[secIdx].rows.push({
+          id: `price-${Date.now()}`,
+          name: 'Новая позиция',
+          price: '0',
+          unit: 'шт.',
+          note: ''
+        });
+      }
       return newData;
     });
   };
@@ -482,6 +495,8 @@ export default function AdminPanel({ onExit }) {
                         <thead>
                           <tr style={{ background: '#f1f5f9' }}>
                             <th style={{ border: '1px solid #cbd5e1', padding: '6px' }}>Наименование</th>
+                            <th style={{ border: '1px solid #cbd5e1', padding: '6px', minWidth: '80px' }}>{section.priceColLabel || 'Цена самовывозом'}</th>
+                            <th style={{ border: '1px solid #cbd5e1', padding: '6px', minWidth: '70px' }}>{section.bagColLabel || 'Мешок'}</th>
                             {weights.map((w, wi) => (
                               <th key={wi} style={{ border: '1px solid #cbd5e1', padding: '4px' }}>
                                 <input value={w} onChange={(e) => updateDeliveryHeader(secIdx, 'weight', wi, e.target.value)} style={{ width: '40px', fontSize: '10px', textAlign: 'center' }} />
@@ -495,6 +510,26 @@ export default function AdminPanel({ onExit }) {
                             <tr key={ri}>
                               <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>
                                 <input value={row.name} onChange={(e) => updatePriceTableRow(secIdx, ri, 'name', e.target.value)} style={{ width: '100%', border: 'none', fontSize: '11px' }} />
+                              </td>
+                              <td style={{ border: '1px solid #cbd5e1', padding: '0' }}>
+                                <input
+                                  value={row.price ?? ''}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    updatePriceTableRow(secIdx, ri, 'price', val === '' ? '-' : isNaN(val) ? val : Number(val));
+                                  }}
+                                  style={{ width: '100%', border: 'none', textAlign: 'center', padding: '6px', fontSize: '11px' }}
+                                />
+                              </td>
+                              <td style={{ border: '1px solid #cbd5e1', padding: '0' }}>
+                                <input
+                                  value={row.bag ?? ''}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    updatePriceTableRow(secIdx, ri, 'bag', val === '' ? '-' : isNaN(val) ? val : Number(val));
+                                  }}
+                                  style={{ width: '100%', border: 'none', textAlign: 'center', padding: '6px', fontSize: '11px' }}
+                                />
                               </td>
                               {weights.map((_, wi) => (
                                 <td key={wi} style={{ border: '1px solid #cbd5e1', padding: '0' }}>
