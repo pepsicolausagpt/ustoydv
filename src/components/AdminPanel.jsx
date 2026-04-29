@@ -100,19 +100,26 @@ export default function AdminPanel({ onExit }) {
       const dbSec = dbPrices.find(s => s.id === defaultSec.id);
       if (!dbSec) return defaultSec;
 
-      const mergedRows = defaultSec.rows.map(defaultRow => {
-        const dbRow = dbSec.rows?.find(r => r.id === defaultRow.id);
-        if (!dbRow) return defaultRow;
-        return {
-          ...defaultRow,
-          ...dbRow,
-          complexHeaders: dbRow.complexHeaders || defaultRow.complexHeaders,
-          complexSubHeaders: dbRow.complexSubHeaders || defaultRow.complexSubHeaders,
-          hasComplexTable: dbRow.hasComplexTable !== undefined ? dbRow.hasComplexTable : defaultRow.hasComplexTable
-        };
-      });
+      const dbHasRows = Array.isArray(dbSec.rows);
 
-      if (dbSec.rows) {
+      const mergedRows = defaultSec.rows
+        .map(defaultRow => {
+          const dbRow = dbSec.rows?.find(r => r.id === defaultRow.id);
+          if (!dbRow) {
+            if (dbHasRows) return null;
+            return defaultRow;
+          }
+          return {
+            ...defaultRow,
+            ...dbRow,
+            complexHeaders: dbRow.complexHeaders || defaultRow.complexHeaders,
+            complexSubHeaders: dbRow.complexSubHeaders || defaultRow.complexSubHeaders,
+            hasComplexTable: dbRow.hasComplexTable !== undefined ? dbRow.hasComplexTable : defaultRow.hasComplexTable
+          };
+        })
+        .filter(Boolean);
+
+      if (dbHasRows) {
         const defaultRowIds = new Set(defaultSec.rows.map(r => r.id));
         const newRows = dbSec.rows.filter(r => r.id && !defaultRowIds.has(r.id));
         mergedRows.push(...newRows);
