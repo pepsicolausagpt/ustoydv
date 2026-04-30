@@ -700,18 +700,18 @@ export default function AdminPanel({ onExit }) {
                     if (row.hasComplexTable && row.rows) {
                       return (
                         <div key={row.id || ri} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px', padding: '12px', background: row.enabled === false ? '#fff1f2' : '#fafafa', borderRadius: '8px', border: '1px solid #e2e8f0', opacity: row.enabled === false ? 0.7 : 1 }}>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 100px 100px 1fr 30px', gap: '8px', alignItems: 'center' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 100px 100px 1fr', gap: '8px', alignItems: 'center' }}>
                             <input type="checkbox" checked={row.enabled !== false} onChange={(e) => updateSimpleRowField(secIdx, ri, 'enabled', e.target.checked)} title="Активен" />
                             <input value={row.name} onChange={(e) => updateSimpleRowField(secIdx, ri, 'name', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }} placeholder="Название" />
                             <input value={row.price || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'price', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', textAlign: 'center' }} placeholder="Цена" />
                             <input value={row.unit || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'unit', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} placeholder="Ед.изм." />
                             <input value={row.note || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'note', e.target.value)} placeholder="Примечание" style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} />
-                            <button onClick={() => removeSimpleRow(secIdx, ri)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>✕</button>
                           </div>
                           <div style={{ overflowX: 'auto', marginTop: '4px' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
                               <thead>
                                 <tr style={{ background: '#f1f5f9' }}>
+                                  <th style={{ border: '1px solid #cbd5e1', padding: '4px', width: '28px' }}></th>
                                   <th style={{ border: '1px solid #cbd5e1', padding: '4px', width: '30px' }}>№</th>
                                   <th style={{ border: '1px solid #cbd5e1', padding: '4px' }}>Наименование</th>
                                   <th style={{ border: '1px solid #cbd5e1', padding: '4px', width: '50px' }}>Кол-во</th>
@@ -726,14 +726,17 @@ export default function AdminPanel({ onExit }) {
                                   if (sub.isGroup) {
                                     return (
                                       <tr key={si} style={{ background: '#FF6B00', color: '#fff' }}>
-                                        <td colSpan={7} style={{ border: '1px solid #cbd5e1', padding: '4px', fontWeight: 'bold', textAlign: 'center' }}>
+                                        <td colSpan={8} style={{ border: '1px solid #cbd5e1', padding: '4px', fontWeight: 'bold', textAlign: 'center' }}>
                                           <input value={sub.label} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 'label', e.target.value)} style={{ width: '60px', textAlign: 'center', border: 'none', background: 'transparent', color: '#fff', fontWeight: 'bold' }} />
                                         </td>
                                       </tr>
                                     );
                                   }
                                   return (
-                                    <tr key={si}>
+                                    <tr key={si} style={{ opacity: sub.enabled === false ? 0.45 : 1, background: sub.enabled === false ? '#fff1f2' : 'transparent' }}>
+                                      <td style={{ border: '1px solid #cbd5e1', padding: '2px', textAlign: 'center' }}>
+                                        <input type="checkbox" checked={sub.enabled !== false} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 'enabled', e.target.checked)} style={{ margin: 0 }} title="Активен" />
+                                      </td>
                                       <td style={{ border: '1px solid #cbd5e1', padding: '2px', textAlign: 'center' }}>{sub.n}</td>
                                       <td style={{ border: '1px solid #cbd5e1', padding: '0' }}>
                                         <input value={sub.name} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 'name', e.target.value)} style={{ width: '100%', border: 'none', fontSize: '11px', padding: '4px' }} />
