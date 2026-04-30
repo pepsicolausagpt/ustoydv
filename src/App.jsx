@@ -111,7 +111,11 @@ const App = () => {
         setShowAdmin(false);
         const catId = h.replace('#category-', '');
         const found = siteCategories.find(c => c.id === catId);
-        if (found) setActiveCategory(found);
+        if (found && found.enabled !== false) {
+          setActiveCategory(found);
+        } else {
+          handleBack();
+        }
       } else {
         setActiveCategory(null);
         setShowPrice(false);

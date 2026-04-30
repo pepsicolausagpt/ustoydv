@@ -523,6 +523,33 @@ export default function AdminPanel({ onExit }) {
             </div>
           </section>
 
+          {/* 1.5. Настройка разделов */}
+          <section style={{ background: '#fff', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
+            <h2 style={{ marginBottom: '24px' }}>1.5. Настройка разделов (Услуг)</h2>
+            <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>Здесь можно изменить заголовки и описания основных разделов, а также временно скрыть их с сайта.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              {categoriesData?.map((cat, idx) => (
+                <div key={cat.id} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 100px', gap: '16px', alignItems: 'start', padding: '16px', border: '1px solid #eee', borderRadius: '8px', background: cat.enabled === false ? '#fff1f2' : '#fcfcfc' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>Заголовок ({cat.id})</label>
+                    <input type="text" value={cat.title || ''} onChange={e => updateCategoryField(idx, 'title', e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>Описание на главной</label>
+                    <textarea value={cat.desc || ''} onChange={e => updateCategoryField(idx, 'desc', e.target.value)} rows={2} style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', resize: 'vertical' }} />
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px' }}>Активен</label>
+                    <input type="checkbox" checked={cat.enabled !== false} onChange={e => updateCategoryField(idx, 'enabled', e.target.checked)} style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
+                    <div style={{ fontSize: '10px', marginTop: '4px', color: cat.enabled === false ? '#be123c' : '#15803d' }}>
+                      {cat.enabled === false ? 'Скрыт' : 'Виден'}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
           {/* 2. Каталог */}
           <section style={{ background: '#fff', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)' }}>
             <h2 style={{ marginBottom: '24px' }}>2. Каталог продукции</h2>

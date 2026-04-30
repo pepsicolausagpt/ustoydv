@@ -27,7 +27,7 @@ const features = [
 
 const HomeView = ({ categories, onSelectCategory, onPriceClick }) => {
   const primaryCat    = categories.find(c => c.isPrimary);
-  const secondaryCats = categories.filter(c => !c.isPrimary);
+  const secondaryCats = categories.filter(c => !c.isPrimary && c.enabled !== false);
 
   return (
     <>
