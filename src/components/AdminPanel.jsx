@@ -583,8 +583,8 @@ export default function AdminPanel({ onExit }) {
                           Активен
                         </label>
                       </div>
-                      <input type="text" value={item.name} onChange={(e) => updateCategoryItem(catIdx, itemIdx, 'name', e.target.value)} style={{ width: '100%', marginBottom: '8px', fontWeight: 'bold', border: '1px solid #ddd', padding: '4px' }} />
-                      <input type="text" value={item.price} onChange={(e) => updateCategoryItem(catIdx, itemIdx, 'price', e.target.value)} style={{ width: '100%', marginBottom: '8px', border: '1px solid #ddd', padding: '4px' }} />
+                      <input type="text" value={item.name || ''} onChange={(e) => updateCategoryItem(catIdx, itemIdx, 'name', e.target.value)} style={{ width: '100%', marginBottom: '8px', fontWeight: 'bold', border: '1px solid #ddd', padding: '4px' }} />
+                      <input type="text" value={item.price || ''} onChange={(e) => updateCategoryItem(catIdx, itemIdx, 'price', e.target.value)} style={{ width: '100%', marginBottom: '8px', border: '1px solid #ddd', padding: '4px' }} />
                       <textarea value={item.desc || ''} onChange={(e) => updateCategoryItem(catIdx, itemIdx, 'desc', e.target.value)} placeholder="Описание товара" rows={2} style={{ width: '100%', marginBottom: '8px', border: '1px solid #ddd', padding: '4px', borderRadius: '4px', resize: 'vertical', fontSize: '12px' }} />
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
                         {item.img && <img src={item.img.startsWith('http') ? item.img : `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/public/${item.img}`} alt="preview" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />}
