@@ -270,7 +270,8 @@
           "name": "БАНЯ",
           "desc": "",
           "price": "390000 руб",
-          "img": "images/uploads/1777533767159-IMG-20220725-WA0008.jpg"
+          "img": "images/uploads/1777533767159-IMG-20220725-WA0008.jpg",
+          "enabled": false
         }
       ],
       "isPrimary": false
@@ -1102,7 +1103,8 @@
               "l_m3": "19000",
               "name": "Доска 50х120х4000 мм",
               "s_m3": "18000",
-              "count": 41
+              "count": 41,
+              "enabled": false
             },
             {
               "n": 18,
@@ -1111,7 +1113,8 @@
               "l_m3": "19000",
               "name": "Доска 50х150х4000 мм",
               "s_m3": "18000",
-              "count": 33
+              "count": 33,
+              "enabled": false
             },
             {
               "n": 19,
@@ -1120,7 +1123,8 @@
               "l_m3": "19000",
               "name": "Доска 50х180х4000 мм",
               "s_m3": "18000",
-              "count": 27
+              "count": 27,
+              "enabled": false
             },
             {
               "n": 20,
@@ -1129,7 +1133,8 @@
               "l_m3": "19000",
               "name": "Доска 50х200х4000 мм",
               "s_m3": "18000",
-              "count": 25
+              "count": 25,
+              "enabled": false
             }
           ]
         },
@@ -1358,7 +1363,7 @@
               "count": 4
             }
           ],
-          "enabled": true
+          "enabled": false
         },
         {
           "id": "brusok",
