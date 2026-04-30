@@ -63,14 +63,14 @@
           "desc": "Мешок 50 кг — 220 руб.",
           "name": "Песок",
           "price": "1 400 руб/м³",
-          "enabled": false
+          "enabled": true
         },
         {
           "id": "pesok-gost",
           "desc": "Для ответственных работ.",
           "name": "Песок ГОСТ 8736-2014",
           "price": "1 580 руб/м³",
-          "enabled": false
+          "enabled": true
         },
         {
           "id": "otsev",
@@ -151,7 +151,7 @@
       ],
       "isPrimary": false,
       "priceNote": "Цены самовывозом за м³. Дата прайса: 24.04.2026",
-      "enabled": false
+      "enabled": true
     },
     {
       "id": "coal",
@@ -831,7 +831,7 @@
             "-",
             "-"
           ],
-          "enabled": false
+          "enabled": true
         },
         {
           "id": "gorb-el",
@@ -846,7 +846,7 @@
             16000,
             20000
           ],
-          "enabled": false
+          "enabled": true
         },
         {
           "id": "gorb-listv",
@@ -861,7 +861,7 @@
             20000,
             25000
           ],
-          "enabled": false
+          "enabled": true
         },
         {
           "id": "gorb-lapsh",
