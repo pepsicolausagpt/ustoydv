@@ -441,7 +441,8 @@ export default function AdminPanel({ onExit }) {
         <h1>Панель Управления (GitHub CMS)</h1>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button onClick={() => setShowTokenSettings(!showTokenSettings)} style={{ padding: '8px 16px', background: tokenValid ? '#e2e8f0' : '#fee2e2', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}>
-            {tokenValid ? '⚙️ GitHub Token: OK' : '⚠️ Настроить Токен'}\n          </button>
+            {tokenValid ? '⚙️ GitHub Token: OK' : '⚠️ Настроить Токен'}
+          </button>
           <button onClick={() => setIsLoggedIn(false)} style={{ padding: '8px 16px', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}>Выход</button>
         </div>
       </div>
@@ -575,7 +576,8 @@ export default function AdminPanel({ onExit }) {
                       </button>
                     </div>
                   ))}
-                  <button onClick={() => addCategoryItem(catIdx)} style={{ border: '2px dashed #ccc', borderRadius: '8px', cursor: 'pointer', height: '100px', background: 'none', color: '#666' }}>+ Добавить товар</button>\n                </div>
+                  <button onClick={() => addCategoryItem(catIdx)} style={{ border: '2px dashed #ccc', borderRadius: '8px', cursor: 'pointer', height: '100px', background: 'none', color: '#666' }}>+ Добавить товар</button>
+                </div>
               </div>
             ))}
           </section>
@@ -640,17 +642,20 @@ export default function AdminPanel({ onExit }) {
                                       const newDel = [...(row.delivery || [])];
                                       newDel[wi] = e.target.value;
                                       updatePriceTableRow(secIdx, ri, 'delivery', newDel);
-                                    }}\n                                    style={{ width: '100%', border: 'none', textAlign: 'center', padding: '6px' }}
+                                    }}
+                                    style={{ width: '100%', border: 'none', textAlign: 'center', padding: '6px' }}
                                   />
                                 </td>
                               ))}
                               <td style={{ border: '1px solid #cbd5e1', textAlign: 'center' }}>
-                                <button onClick={() => removePriceTableRow(secIdx, ri)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>✕</button>\n                              </td>
+                                <button onClick={() => removePriceTableRow(secIdx, ri)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>✕</button>
+                              </td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
-                      <button onClick={() => addPriceTableRow(secIdx)} style={{ marginTop: '10px', padding: '4px 12px', fontSize: '11px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить строку</button>\n                    </div>
+                      <button onClick={() => addPriceTableRow(secIdx)} style={{ marginTop: '10px', padding: '4px 12px', fontSize: '11px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить строку</button>
+                    </div>
                     {/* Примечания (footnotes) */}
                     <div style={{ marginTop: '16px' }}>
                       <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#666' }}>Примечания к таблице</label>
@@ -662,9 +667,11 @@ export default function AdminPanel({ onExit }) {
                             onChange={(e) => updateFootnote(secIdx, fnIdx, e.target.value)}
                             style={{ flex: 1, padding: '6px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '11px' }}
                           />
-                          <button onClick={() => removeFootnote(secIdx, fnIdx)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontSize: '14px' }}>✕</button>\n                        </div>
+                          <button onClick={() => removeFootnote(secIdx, fnIdx)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontSize: '14px' }}>✕</button>
+                        </div>
                       ))}
-                      <button onClick={() => addFootnote(secIdx)} style={{ padding: '4px 12px', fontSize: '11px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить примечание</button>\n                    </div>
+                      <button onClick={() => addFootnote(secIdx)} style={{ padding: '4px 12px', fontSize: '11px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить примечание</button>
+                    </div>
                   </div>
                 );
               }
@@ -761,7 +768,8 @@ export default function AdminPanel({ onExit }) {
                       </div>
                     );
                   })}
-                  <button onClick={() => addSimpleRow(secIdx)} style={{ marginTop: '10px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить строку</button>\n                  {/* Примечания (footnotes) */}
+                  <button onClick={() => addSimpleRow(secIdx)} style={{ marginTop: '10px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить строку</button>
+                  {/* Примечания (footnotes) */}
                   {((section.footnotes && section.footnotes.length > 0) || true) && (
                     <div style={{ marginTop: '16px' }}>
                       <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#666' }}>Примечания к таблице</label>
@@ -773,9 +781,11 @@ export default function AdminPanel({ onExit }) {
                             onChange={(e) => updateFootnote(secIdx, fnIdx, e.target.value)}
                             style={{ flex: 1, padding: '6px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '11px' }}
                           />
-                          <button onClick={() => removeFootnote(secIdx, fnIdx)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontSize: '14px' }}>✕</button>\n                        </div>
+                          <button onClick={() => removeFootnote(secIdx, fnIdx)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontSize: '14px' }}>✕</button>
+                        </div>
                       ))}
-                      <button onClick={() => addFootnote(secIdx)} style={{ padding: '4px 12px', fontSize: '11px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить примечание</button>\n                    </div>
+                      <button onClick={() => addFootnote(secIdx)} style={{ padding: '4px 12px', fontSize: '11px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить примечание</button>
+                    </div>
                   )}
                 </div>
               );
