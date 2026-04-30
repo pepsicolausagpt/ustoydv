@@ -699,16 +699,19 @@ export default function AdminPanel({ onExit }) {
                   {section.rows.map((row, ri) => {
                     if (row.hasComplexTable && row.rows) {
                       return (
-                        <div key={row.id || ri} style={{ marginBottom: '20px', padding: '12px', background: '#f8fafc', borderRadius: '8px' }}>
-                          <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'center' }}>
-                            <strong style={{ fontSize: '13px' }}>{row.name}</strong>
-                            <input value={row.price || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'price', e.target.value)} style={{ width: '100px', fontSize: '11px', padding: '4px', border: '1px solid #ddd', borderRadius: '4px' }} />
-                            <span style={{ fontSize: '11px', color: '#666' }}>{row.unit}</span>
+                        <div key={row.id || ri} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px', padding: '12px', background: row.enabled === false ? '#fff1f2' : '#fafafa', borderRadius: '8px', border: '1px solid #e2e8f0', opacity: row.enabled === false ? 0.7 : 1 }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 100px 100px 1fr 30px', gap: '8px', alignItems: 'center' }}>
+                            <input type="checkbox" checked={row.enabled !== false} onChange={(e) => updateSimpleRowField(secIdx, ri, 'enabled', e.target.checked)} title="Активен" />
+                            <input value={row.name} onChange={(e) => updateSimpleRowField(secIdx, ri, 'name', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }} placeholder="Название" />
+                            <input value={row.price || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'price', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', textAlign: 'center' }} placeholder="Цена" />
+                            <input value={row.unit || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'unit', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} placeholder="Ед.изм." />
+                            <input value={row.note || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'note', e.target.value)} placeholder="Примечание" style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} />
+                            <button onClick={() => removeSimpleRow(secIdx, ri)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>✕</button>
                           </div>
-                          <div style={{ overflowX: 'auto' }}>
+                          <div style={{ overflowX: 'auto', marginTop: '4px' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
                               <thead>
-                                <tr style={{ background: '#e2e8f0' }}>
+                                <tr style={{ background: '#f1f5f9' }}>
                                   <th style={{ border: '1px solid #cbd5e1', padding: '4px', width: '30px' }}>№</th>
                                   <th style={{ border: '1px solid #cbd5e1', padding: '4px' }}>Наименование</th>
                                   <th style={{ border: '1px solid #cbd5e1', padding: '4px', width: '50px' }}>Кол-во</th>
