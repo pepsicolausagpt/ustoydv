@@ -817,7 +817,7 @@
             "-",
             "-"
           ],
-          "enabled": false
+          "enabled": true
         },
         {
           "id": "drova-chur",
@@ -832,7 +832,7 @@
             "-",
             "-"
           ],
-          "enabled": false
+          "enabled": true
         },
         {
           "id": "gorb-el",
@@ -1281,7 +1281,7 @@
               "name": "Брус 100х100х6000 мм",
               "s_m3": "-",
               "count": 16,
-              "enabled": false
+              "enabled": true
             },
             {
               "n": 11,
@@ -1291,7 +1291,7 @@
               "name": "Брус 100х150х6000 мм",
               "s_m3": "-",
               "count": 11,
-              "enabled": false
+              "enabled": true
             },
             {
               "n": 12,
