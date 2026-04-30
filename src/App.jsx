@@ -50,13 +50,18 @@ const App = () => {
                 if (dbHasRows) return null;
                 return defaultRow;
               }
-              return {
+              const merged = {
                 ...defaultRow,
                 ...dbRow,
                 complexHeaders: dbRow.complexHeaders || defaultRow.complexHeaders,
                 complexSubHeaders: dbRow.complexSubHeaders || defaultRow.complexSubHeaders,
                 hasComplexTable: dbRow.hasComplexTable !== undefined ? dbRow.hasComplexTable : defaultRow.hasComplexTable
               };
+              // Filter disabled sub-rows in complex tables (lumber)
+              if (merged.hasComplexTable && Array.isArray(merged.rows)) {
+                merged.rows = merged.rows.filter(sub => sub.isGroup || sub.enabled !== false);
+              }
+              return merged;
             })
             .filter(Boolean)
             .filter(r => r.enabled !== false);
