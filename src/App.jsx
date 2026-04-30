@@ -31,7 +31,7 @@ const App = () => {
           prices: cat.prices?.map(p => ({
             ...p,
             img: p.img?.replace(/^\//, '') || p.img
-          }))
+          })).filter(p => p.enabled !== false)
         }));
         setSiteCategories(sanitized);
       }
@@ -58,12 +58,13 @@ const App = () => {
                 hasComplexTable: dbRow.hasComplexTable !== undefined ? dbRow.hasComplexTable : defaultRow.hasComplexTable
               };
             })
-            .filter(Boolean);
+            .filter(Boolean)
+            .filter(r => r.enabled !== false);
 
           if (dbHasRows) {
             const defaultRowIds = new Set(defaultSec.rows.map(r => r.id));
             const newRows = dbSec.rows.filter(r => r.id && !defaultRowIds.has(r.id));
-            mergedRows.push(...newRows);
+            mergedRows.push(...newRows.filter(r => r.enabled !== false));
           }
 
           return { ...defaultSec, ...dbSec, rows: mergedRows };

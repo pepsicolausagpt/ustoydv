@@ -441,8 +441,7 @@ export default function AdminPanel({ onExit }) {
         <h1>Панель Управления (GitHub CMS)</h1>
         <div style={{ display: 'flex', gap: '12px' }}>
           <button onClick={() => setShowTokenSettings(!showTokenSettings)} style={{ padding: '8px 16px', background: tokenValid ? '#e2e8f0' : '#fee2e2', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}>
-            {tokenValid ? '⚙️ GitHub Token: OK' : '⚠️ Настроить Токен'}
-          </button>
+            {tokenValid ? '⚙️ GitHub Token: OK' : '⚠️ Настроить Токен'}\n          </button>
           <button onClick={() => setIsLoggedIn(false)} style={{ padding: '8px 16px', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '13px' }}>Выход</button>
         </div>
       </div>
@@ -558,7 +557,13 @@ export default function AdminPanel({ onExit }) {
                 <h3 style={{ color: '#FF6B00' }}>{cat.title}</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
                   {cat.prices.map((item, itemIdx) => (
-                    <div key={item.id} style={{ border: '1px solid #e2e8f0', padding: '16px', borderRadius: '8px', background: '#fafafa' }}>
+                    <div key={item.id} style={{ border: '1px solid #e2e8f0', padding: '16px', borderRadius: '8px', background: item.enabled === false ? '#fff1f2' : '#fafafa', opacity: item.enabled === false ? 0.7 : 1 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+                        <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <input type="checkbox" checked={item.enabled !== false} onChange={(e) => updateCategoryItem(catIdx, itemIdx, 'enabled', e.target.checked)} />
+                          Активен
+                        </label>
+                      </div>
                       <input type="text" value={item.name} onChange={(e) => updateCategoryItem(catIdx, itemIdx, 'name', e.target.value)} style={{ width: '100%', marginBottom: '8px', fontWeight: 'bold', border: '1px solid #ddd', padding: '4px' }} />
                       <input type="text" value={item.price} onChange={(e) => updateCategoryItem(catIdx, itemIdx, 'price', e.target.value)} style={{ width: '100%', marginBottom: '8px', border: '1px solid #ddd', padding: '4px' }} />
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
@@ -570,8 +575,7 @@ export default function AdminPanel({ onExit }) {
                       </button>
                     </div>
                   ))}
-                  <button onClick={() => addCategoryItem(catIdx)} style={{ border: '2px dashed #ccc', borderRadius: '8px', cursor: 'pointer', height: '100px', background: 'none', color: '#666' }}>+ Добавить товар</button>
-                </div>
+                  <button onClick={() => addCategoryItem(catIdx)} style={{ border: '2px dashed #ccc', borderRadius: '8px', cursor: 'pointer', height: '100px', background: 'none', color: '#666' }}>+ Добавить товар</button>\n                </div>
               </div>
             ))}
           </section>
@@ -603,9 +607,10 @@ export default function AdminPanel({ onExit }) {
                         </thead>
                         <tbody>
                           {(section.rows || []).map((row, ri) => (
-                            <tr key={ri}>
-                              <td style={{ border: '1px solid #cbd5e1', padding: '4px' }}>
-                                <input value={row.name || ''} onChange={(e) => updatePriceTableRow(secIdx, ri, 'name', e.target.value)} style={{ width: '100%', border: 'none', fontSize: '11px' }} />
+                            <tr key={ri} style={{ opacity: row.enabled === false ? 0.5 : 1, background: row.enabled === false ? '#fff1f2' : 'transparent' }}>
+                              <td style={{ border: '1px solid #cbd5e1', padding: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <input type="checkbox" checked={row.enabled !== false} onChange={(e) => updatePriceTableRow(secIdx, ri, 'enabled', e.target.checked)} style={{ margin: 0 }} title="Активен" />
+                                <input value={row.name || ''} onChange={(e) => updatePriceTableRow(secIdx, ri, 'name', e.target.value)} style={{ width: '100%', border: 'none', fontSize: '11px', background: 'transparent' }} />
                               </td>
                               <td style={{ border: '1px solid #cbd5e1', padding: '0' }}>
                                 <input
@@ -635,20 +640,17 @@ export default function AdminPanel({ onExit }) {
                                       const newDel = [...(row.delivery || [])];
                                       newDel[wi] = e.target.value;
                                       updatePriceTableRow(secIdx, ri, 'delivery', newDel);
-                                    }}
-                                    style={{ width: '100%', border: 'none', textAlign: 'center', padding: '6px' }}
+                                    }}\n                                    style={{ width: '100%', border: 'none', textAlign: 'center', padding: '6px' }}
                                   />
                                 </td>
                               ))}
                               <td style={{ border: '1px solid #cbd5e1', textAlign: 'center' }}>
-                                <button onClick={() => removePriceTableRow(secIdx, ri)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>✕</button>
-                              </td>
+                                <button onClick={() => removePriceTableRow(secIdx, ri)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>✕</button>\n                              </td>
                             </tr>
                           ))}
                         </tbody>
                       </table>
-                      <button onClick={() => addPriceTableRow(secIdx)} style={{ marginTop: '10px', padding: '4px 12px', fontSize: '11px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить строку</button>
-                    </div>
+                      <button onClick={() => addPriceTableRow(secIdx)} style={{ marginTop: '10px', padding: '4px 12px', fontSize: '11px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить строку</button>\n                    </div>
                     {/* Примечания (footnotes) */}
                     <div style={{ marginTop: '16px' }}>
                       <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#666' }}>Примечания к таблице</label>
@@ -660,11 +662,9 @@ export default function AdminPanel({ onExit }) {
                             onChange={(e) => updateFootnote(secIdx, fnIdx, e.target.value)}
                             style={{ flex: 1, padding: '6px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '11px' }}
                           />
-                          <button onClick={() => removeFootnote(secIdx, fnIdx)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontSize: '14px' }}>✕</button>
-                        </div>
+                          <button onClick={() => removeFootnote(secIdx, fnIdx)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontSize: '14px' }}>✕</button>\n                        </div>
                       ))}
-                      <button onClick={() => addFootnote(secIdx)} style={{ padding: '4px 12px', fontSize: '11px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить примечание</button>
-                    </div>
+                      <button onClick={() => addFootnote(secIdx)} style={{ padding: '4px 12px', fontSize: '11px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить примечание</button>\n                    </div>
                   </div>
                 );
               }
@@ -735,17 +735,33 @@ export default function AdminPanel({ onExit }) {
                       );
                     }
                     return (
-                      <div key={row.id || ri} style={{ display: 'grid', gridTemplateColumns: '1fr 100px 100px 1fr 30px', gap: '8px', alignItems: 'center', marginBottom: '8px', padding: '8px', background: '#fafafa', borderRadius: '6px' }}>
-                        <input value={row.name} onChange={(e) => updateSimpleRowField(secIdx, ri, 'name', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} />
-                        <input value={row.price || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'price', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', textAlign: 'center' }} />
-                        <input value={row.unit || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'unit', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} />
-                        <input value={row.note || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'note', e.target.value)} placeholder="Примечание" style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} />
-                        <button onClick={() => removeSimpleRow(secIdx, ri)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>✕</button>
+                      <div key={row.id || ri} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px', padding: '12px', background: row.enabled === false ? '#fff1f2' : '#fafafa', borderRadius: '8px', border: '1px solid #e2e8f0', opacity: row.enabled === false ? 0.7 : 1 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 100px 100px 1fr 30px', gap: '8px', alignItems: 'center' }}>
+                          <input type="checkbox" checked={row.enabled !== false} onChange={(e) => updateSimpleRowField(secIdx, ri, 'enabled', e.target.checked)} title="Активен" />
+                          <input value={row.name} onChange={(e) => updateSimpleRowField(secIdx, ri, 'name', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} placeholder="Название" />
+                          <input value={row.price || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'price', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', textAlign: 'center' }} placeholder="Цена" />
+                          <input value={row.unit || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'unit', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} placeholder="Ед.изм." />
+                          <input value={row.note || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'note', e.target.value)} placeholder="Примечание" style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} />
+                          <button onClick={() => removeSimpleRow(secIdx, ri)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>✕</button>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingLeft: '24px' }}>
+                          <span style={{ fontSize: '11px', color: '#666' }}>Картинка:</span>
+                          {row.img && <img src={row.img.startsWith('http') ? row.img : `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/public/${row.img}`} alt="preview" style={{ width: '30px', height: '30px', objectFit: 'cover', borderRadius: '4px' }} />}
+                          <input type="file" accept="image/*" onChange={async (e) => {
+                            if (!e.target.files[0]) return;
+                            if (!tokenValid) { setShowTokenSettings(true); alert('Для загрузки фото нужен GitHub Token'); return; }
+                            setLoading(true);
+                            try {
+                              const publicUrl = await uploadImageToGithub(e.target.files[0]);
+                              updateSimpleRowField(secIdx, ri, 'img', publicUrl);
+                            } catch (err) { alert('Ошибка загрузки: ' + err.message); }
+                            setLoading(false);
+                          }} style={{ fontSize: '11px' }} />
+                        </div>
                       </div>
                     );
                   })}
-                  <button onClick={() => addSimpleRow(secIdx)} style={{ marginTop: '10px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить строку</button>
-                  {/* Примечания (footnotes) */}
+                  <button onClick={() => addSimpleRow(secIdx)} style={{ marginTop: '10px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить строку</button>\n                  {/* Примечания (footnotes) */}
                   {((section.footnotes && section.footnotes.length > 0) || true) && (
                     <div style={{ marginTop: '16px' }}>
                       <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#666' }}>Примечания к таблице</label>
@@ -757,11 +773,9 @@ export default function AdminPanel({ onExit }) {
                             onChange={(e) => updateFootnote(secIdx, fnIdx, e.target.value)}
                             style={{ flex: 1, padding: '6px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '11px' }}
                           />
-                          <button onClick={() => removeFootnote(secIdx, fnIdx)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontSize: '14px' }}>✕</button>
-                        </div>
+                          <button onClick={() => removeFootnote(secIdx, fnIdx)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer', fontSize: '14px' }}>✕</button>\n                        </div>
                       ))}
-                      <button onClick={() => addFootnote(secIdx)} style={{ padding: '4px 12px', fontSize: '11px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить примечание</button>
-                    </div>
+                      <button onClick={() => addFootnote(secIdx)} style={{ padding: '4px 12px', fontSize: '11px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить примечание</button>\n                    </div>
                   )}
                 </div>
               );
