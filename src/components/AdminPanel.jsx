@@ -529,7 +529,7 @@ export default function AdminPanel({ onExit }) {
             <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px' }}>Здесь можно изменить заголовки и описания основных разделов, а также временно скрыть их с сайта.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {categoriesData?.map((cat, idx) => (
-                <div key={cat.id} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 100px', gap: '16px', alignItems: 'start', padding: '16px', border: '1px solid #eee', borderRadius: '8px', background: cat.enabled === false ? '#fff1f2' : '#fcfcfc' }}>
+                <div key={cat.id} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 160px 100px', gap: '16px', alignItems: 'start', padding: '16px', border: '1px solid #eee', borderRadius: '8px', background: cat.enabled === false ? '#fff1f2' : '#fcfcfc' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>Заголовок ({cat.id})</label>
                     <input type="text" value={cat.title || ''} onChange={e => updateCategoryField(idx, 'title', e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} />
@@ -537,6 +537,24 @@ export default function AdminPanel({ onExit }) {
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>Описание на главной</label>
                     <textarea value={cat.desc || ''} onChange={e => updateCategoryField(idx, 'desc', e.target.value)} rows={2} style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px', resize: 'vertical' }} />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '6px' }}>Фото раздела</label>
+                    {cat.img && (
+                      <img
+                        src={cat.img.startsWith('http') ? cat.img : `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/public/${cat.img}`}
+                        alt="preview"
+                        style={{ width: '100%', height: '60px', objectFit: 'cover', borderRadius: '4px', marginBottom: '6px', display: 'block' }}
+                      />
+                    )}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={e => uploadImage(e.target.files[0], idx, null)}
+                      style={{ fontSize: '11px', width: '100%' }}
+                      disabled={loading}
+                    />
+                    {loading && <div style={{ fontSize: '10px', color: '#FF6B00', marginTop: '4px' }}>Загрузка...</div>}
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px' }}>Активен</label>
