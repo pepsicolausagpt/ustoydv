@@ -506,7 +506,7 @@ export default function AdminPanel({ onExit }) {
         <div style={{ marginBottom: '30px', padding: '24px', background: '#fff', borderRadius: '16px', border: '2px solid #FF6B00' }}>
           <h3>Настройка доступа к GitHub</h3>
           <p style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}>
-            Для сохранения изменений и загрузки фото необходим персональный токен GitHub с правами <b>repo</b>.
+            Для сохранения изменений и загрузки фото необходим персональный токен GitHub with permissions <b>repo</b>.
           </p>
           <form onSubmit={handleTokenSubmit} style={{ display: 'flex', gap: '12px' }}>
             <input 
@@ -528,7 +528,7 @@ export default function AdminPanel({ onExit }) {
 
       {loading && !categoriesData ? (
         <div style={{ padding: '100px', textAlign: 'center' }}>
-          <div className=\"admin-loader\"></div>
+          <div className="admin-loader"></div>
           <p>Загрузка данных...</p>
         </div>
       ) : (
@@ -555,7 +555,7 @@ export default function AdminPanel({ onExit }) {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '4px' }}>Дата прайса</label>
-                <input type=\"text\" value={priceHeader?.date || ''} onChange={e => setPriceHeader(prev => ({ ...prev, date: e.target.value }))} style={{ width: '200px', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} />
+                <input type="text" value={priceHeader?.date || ''} onChange={e => setPriceHeader(prev => ({ ...prev, date: e.target.value }))} style={{ width: '200px', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} />
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '4px' }}>Основная зона</label>
@@ -569,7 +569,7 @@ export default function AdminPanel({ onExit }) {
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 'bold', marginBottom: '8px' }}>Примечания</label>
                 {priceHeader?.notes?.map((note, idx) => (
                   <div key={idx} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                    <input type=\"text\" value={note} onChange={e => updateHeaderNote(idx, e.target.value)} style={{ flex: 1, padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} />
+                    <input type="text" value={note} onChange={e => updateHeaderNote(idx, e.target.value)} style={{ flex: 1, padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} />
                     <button onClick={() => removeHeaderNote(idx)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>✕</button>
                   </div>
                 ))}
@@ -587,7 +587,7 @@ export default function AdminPanel({ onExit }) {
                 <div key={cat.id} style={{ display: 'grid', gridTemplateColumns: '1fr 2fr 160px 100px', gap: '16px', alignItems: 'start', padding: '16px', border: '1px solid #eee', borderRadius: '8px', background: cat.enabled === false ? '#fff1f2' : '#fcfcfc' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>Заголовок ({cat.id})</label>
-                    <input type=\"text\" value={cat.title || ''} onChange={e => updateCategoryField(idx, 'title', e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} />
+                    <input type="text" value={cat.title || ''} onChange={e => updateCategoryField(idx, 'title', e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ddd', borderRadius: '4px' }} />
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>Описание на главной</label>
@@ -598,13 +598,13 @@ export default function AdminPanel({ onExit }) {
                     {cat.img && (
                       <img
                         src={cat.img.startsWith('http') ? cat.img : `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/public/${cat.img}`}
-                        alt=\"preview\"
+                        alt="preview"
                         style={{ width: '100%', height: '60px', objectFit: 'cover', borderRadius: '4px', marginBottom: '6px', display: 'block' }}
                       />
                     )}
                     <input
-                      type=\"file\"
-                      accept=\"image/*\"
+                      type="file"
+                      accept="image/*"
                       onChange={e => uploadImage(e.target.files[0], idx, null)}
                       style={{ fontSize: '11px', width: '100%' }}
                       disabled={loading}
@@ -613,7 +613,7 @@ export default function AdminPanel({ onExit }) {
                   </div>
                   <div style={{ textAlign: 'center' }}>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px' }}>Активен</label>
-                    <input type=\"checkbox\" checked={cat.enabled !== false} onChange={e => updateCategoryField(idx, 'enabled', e.target.checked)} style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
+                    <input type="checkbox" checked={cat.enabled !== false} onChange={e => updateCategoryField(idx, 'enabled', e.target.checked)} style={{ width: '20px', height: '20px', cursor: 'pointer' }} />
                     <div style={{ fontSize: '10px', marginTop: '4px', color: cat.enabled === false ? '#be123c' : '#15803d' }}>
                       {cat.enabled === false ? 'Скрыт' : 'Виден'}
                     </div>
@@ -634,16 +634,16 @@ export default function AdminPanel({ onExit }) {
                     <div key={item.id} style={{ border: '1px solid #e2e8f0', padding: '16px', borderRadius: '8px', background: item.enabled === false ? '#fff1f2' : '#fafafa', opacity: item.enabled === false ? 0.7 : 1 }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                         <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <input type=\"checkbox\" checked={item.enabled !== false} onChange={(e) => updateCategoryItem(catIdx, itemIdx, 'enabled', e.target.checked)} />
+                          <input type="checkbox" checked={item.enabled !== false} onChange={(e) => updateCategoryItem(catIdx, itemIdx, 'enabled', e.target.checked)} />
                           Активен
                         </label>
                       </div>
-                      <input type=\"text\" value={item.name || ''} onChange={(e) => updateCategoryItem(catIdx, itemIdx, 'name', e.target.value)} style={{ width: '100%', marginBottom: '8px', fontWeight: 'bold', border: '1px solid #ddd', padding: '4px' }} />
-                      <input type=\"text\" value={item.price || ''} onChange={(e) => updateCategoryItem(catIdx, itemIdx, 'price', e.target.value)} style={{ width: '100%', marginBottom: '8px', border: '1px solid #ddd', padding: '4px' }} />
-                      <textarea value={item.desc || ''} onChange={(e) => updateCategoryItem(catIdx, itemIdx, 'desc', e.target.value)} placeholder=\"Описание товара\" rows={2} style={{ width: '100%', marginBottom: '8px', border: '1px solid #ddd', padding: '4px', borderRadius: '4px', resize: 'vertical', fontSize: '12px' }} />
+                      <input type="text" value={item.name || ''} onChange={(e) => updateCategoryItem(catIdx, itemIdx, 'name', e.target.value)} style={{ width: '100%', marginBottom: '8px', fontWeight: 'bold', border: '1px solid #ddd', padding: '4px' }} />
+                      <input type="text" value={item.price || ''} onChange={(e) => updateCategoryItem(catIdx, itemIdx, 'price', e.target.value)} style={{ width: '100%', marginBottom: '8px', border: '1px solid #ddd', padding: '4px' }} />
+                      <textarea value={item.desc || ''} onChange={(e) => updateCategoryItem(catIdx, itemIdx, 'desc', e.target.value)} placeholder="Описание товара" rows={2} style={{ width: '100%', marginBottom: '8px', border: '1px solid #ddd', padding: '4px', borderRadius: '4px', resize: 'vertical', fontSize: '12px' }} />
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                        {item.img && <img src={item.img.startsWith('http') ? item.img : `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/public/${item.img}`} alt=\"preview\" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />}
-                        <input type=\"file\" accept=\"image/*\" onChange={(e) => uploadImage(e.target.files[0], catIdx, itemIdx)} style={{ fontSize: '11px' }} />
+                        {item.img && <img src={item.img.startsWith('http') ? item.img : `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/public/${item.img}`} alt="preview" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />}
+                        <input type="file" accept="image/*" onChange={(e) => uploadImage(e.target.files[0], catIdx, itemIdx)} style={{ fontSize: '11px' }} />
                       </div>
                       <button onClick={() => removeCategoryItem(catIdx, itemIdx)} style={{ width: '100%', background: '#fee2e2', color: '#b00020', border: 'none', padding: '6px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>
                         {confirmDelete?.catIdx === catIdx && confirmDelete?.itemIdx === itemIdx ? 'Точно удалить?' : 'Удалить'}
@@ -685,7 +685,7 @@ export default function AdminPanel({ onExit }) {
                           {(section.rows || []).map((row, ri) => (
                             <tr key={ri} style={{ opacity: row.enabled === false ? 0.5 : 1, background: row.enabled === false ? '#fff1f2' : 'transparent' }}>
                               <td style={{ border: '1px solid #cbd5e1', padding: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <input type=\"checkbox\" checked={row.enabled !== false} onChange={(e) => updatePriceTableRow(secIdx, ri, 'enabled', e.target.checked)} style={{ margin: 0 }} title=\"Активен\" />
+                                <input type="checkbox" checked={row.enabled !== false} onChange={(e) => updatePriceTableRow(secIdx, ri, 'enabled', e.target.checked)} style={{ margin: 0 }} title="Активен" />
                                 <input value={row.name || ''} onChange={(e) => updatePriceTableRow(secIdx, ri, 'name', e.target.value)} style={{ width: '100%', border: 'none', fontSize: '11px', background: 'transparent' }} />
                               </td>
                               <td style={{ border: '1px solid #cbd5e1', padding: '0' }}>
@@ -736,7 +736,7 @@ export default function AdminPanel({ onExit }) {
                       {(section.footnotes || []).map((fn, fnIdx) => (
                         <div key={fnIdx} style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
                           <input
-                            type=\"text\"
+                            type="text"
                             value={fn}
                             onChange={(e) => updateFootnote(secIdx, fnIdx, e.target.value)}
                             style={{ flex: 1, padding: '6px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '11px' }}
@@ -757,11 +757,11 @@ export default function AdminPanel({ onExit }) {
                       return (
                         <div key={row.id || ri} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px', padding: '12px', background: row.enabled === false ? '#fff1f2' : '#fafafa', borderRadius: '8px', border: '1px solid #e2e8f0', opacity: row.enabled === false ? 0.7 : 1 }}>
                           <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 100px 100px 1fr', gap: '8px', alignItems: 'center' }}>
-                            <input type=\"checkbox\" checked={row.enabled !== false} onChange={(e) => updateSimpleRowField(secIdx, ri, 'enabled', e.target.checked)} title=\"Активен\" />
-                            <input value={row.name} onChange={(e) => updateSimpleRowField(secIdx, ri, 'name', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }} placeholder=\"Название\" />
-                            <input value={row.price || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'price', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', textAlign: 'center' }} placeholder=\"Цена\" />
-                            <input value={row.unit || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'unit', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} placeholder=\"Ед.изм.\" />
-                            <input value={row.note || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'note', e.target.value)} placeholder=\"Примечание\" style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} />
+                            <input type="checkbox" checked={row.enabled !== false} onChange={(e) => updateSimpleRowField(secIdx, ri, 'enabled', e.target.checked)} title="Активен" />
+                            <input value={row.name} onChange={(e) => updateSimpleRowField(secIdx, ri, 'name', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }} placeholder="Название" />
+                            <input value={row.price || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'price', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', textAlign: 'center' }} placeholder="Цена" />
+                            <input value={row.unit || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'unit', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} placeholder="Ед.изм." />
+                            <input value={row.note || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'note', e.target.value)} placeholder="Примечание" style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} />
                           </div>
                           <div style={{ overflowX: 'auto', marginTop: '4px' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
@@ -795,7 +795,7 @@ export default function AdminPanel({ onExit }) {
                                   return (
                                     <tr key={si} style={{ opacity: sub.enabled === false ? 0.45 : 1, background: sub.enabled === false ? '#fff1f2' : 'transparent' }}>
                                       <td style={{ border: '1px solid #cbd5e1', padding: '2px', textAlign: 'center' }}>
-                                        <input type=\"checkbox\" checked={sub.enabled !== false} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 'enabled', e.target.checked)} style={{ margin: 0 }} title=\"Активен\" />
+                                        <input type="checkbox" checked={sub.enabled !== false} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 'enabled', e.target.checked)} style={{ margin: 0 }} title="Активен" />
                                       </td>
                                       <td style={{ border: '1px solid #cbd5e1', padding: '2px', textAlign: 'center' }}>
                                         <input value={sub.n} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 'n', e.target.value)} style={{ width: '100%', border: 'none', textAlign: 'center', fontSize: '11px', background: 'transparent' }} />
@@ -837,17 +837,17 @@ export default function AdminPanel({ onExit }) {
                     return (
                       <div key={row.id || ri} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px', padding: '12px', background: row.enabled === false ? '#fff1f2' : '#fafafa', borderRadius: '8px', border: '1px solid #e2e8f0', opacity: row.enabled === false ? 0.7 : 1 }}>
                         <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 100px 100px 1fr 30px', gap: '8px', alignItems: 'center' }}>
-                          <input type=\"checkbox\" checked={row.enabled !== false} onChange={(e) => updateSimpleRowField(secIdx, ri, 'enabled', e.target.checked)} title=\"Активен\" />
-                          <input value={row.name} onChange={(e) => updateSimpleRowField(secIdx, ri, 'name', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} placeholder=\"Название\" />
-                          <input value={row.price || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'price', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', textAlign: 'center' }} placeholder=\"Цена\" />
-                          <input value={row.unit || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'unit', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} placeholder=\"Ед.изм.\" />
-                          <input value={row.note || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'note', e.target.value)} placeholder=\"Примечание\" style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} />
+                          <input type="checkbox" checked={row.enabled !== false} onChange={(e) => updateSimpleRowField(secIdx, ri, 'enabled', e.target.checked)} title="Активен" />
+                          <input value={row.name} onChange={(e) => updateSimpleRowField(secIdx, ri, 'name', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} placeholder="Название" />
+                          <input value={row.price || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'price', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', textAlign: 'center' }} placeholder="Цена" />
+                          <input value={row.unit || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'unit', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} placeholder="Ед.изм." />
+                          <input value={row.note || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'note', e.target.value)} placeholder="Примечание" style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} />
                           <button onClick={() => removeSimpleRow(secIdx, ri)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>✕</button>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingLeft: '24px' }}>
                           <span style={{ fontSize: '11px', color: '#666' }}>Картинка:</span>
-                          {row.img && <img src={row.img.startsWith('http') ? row.img : `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/public/${row.img}`} alt=\"preview\" style={{ width: '30px', height: '30px', objectFit: 'cover', borderRadius: '4px' }} />}
-                          <input type=\"file\" accept=\"image/*\" onChange={async (e) => {
+                          {row.img && <img src={row.img.startsWith('http') ? row.img : `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/public/${row.img}`} alt="preview" style={{ width: '30px', height: '30px', objectFit: 'cover', borderRadius: '4px' }} />}
+                          <input type="file" accept="image/*" onChange={async (e) => {
                             if (!e.target.files[0]) return;
                             if (!tokenValid) { setShowTokenSettings(true); alert('Для загрузки фото нужен GitHub Token'); return; }
                             setLoading(true);
@@ -869,7 +869,7 @@ export default function AdminPanel({ onExit }) {
                       {(section.footnotes || []).map((fn, fnIdx) => (
                         <div key={fnIdx} style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
                           <input
-                            type=\"text\"
+                            type="text"
                             value={fn}
                             onChange={(e) => updateFootnote(secIdx, fnIdx, e.target.value)}
                             style={{ flex: 1, padding: '6px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '11px' }}
