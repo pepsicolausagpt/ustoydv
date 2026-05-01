@@ -383,6 +383,61 @@ export default function AdminPanel({ onExit }) {
     });
   };
 
+  const addComplexSubRow = (secIdx, rowIdx) => {
+    setPricesData(prev => {
+      const newData = [...prev];
+      const section = { ...newData[secIdx], rows: [...newData[secIdx].rows] };
+      const row = { ...section.rows[rowIdx], rows: [...section.rows[rowIdx].rows] };
+      
+      const lastN = row.rows.reduce((max, r) => {
+        const currentN = Number(r.n);
+        return (!isNaN(currentN) && currentN > max) ? currentN : max;
+      }, 0);
+      
+      row.rows.push({
+        n: lastN + 1,
+        name: 'Доска 00х000х4000 мм',
+        count: '',
+        s_m3: '',
+        s_p: '',
+        l_m3: '',
+        l_p: '',
+        enabled: true
+      });
+      section.rows[rowIdx] = row;
+      newData[secIdx] = section;
+      return newData;
+    });
+  };
+
+  const addComplexSubGroup = (secIdx, rowIdx) => {
+    setPricesData(prev => {
+      const newData = [...prev];
+      const section = { ...newData[secIdx], rows: [...newData[secIdx].rows] };
+      const row = { ...section.rows[rowIdx], rows: [...section.rows[rowIdx].rows] };
+      row.rows.push({
+        isGroup: true,
+        label: '4 м.',
+        enabled: true
+      });
+      section.rows[rowIdx] = row;
+      newData[secIdx] = section;
+      return newData;
+    });
+  };
+
+  const removeComplexSubRow = (secIdx, rowIdx, subIdx) => {
+    setPricesData(prev => {
+      const newData = [...prev];
+      const section = { ...newData[secIdx], rows: [...newData[secIdx].rows] };
+      const row = { ...section.rows[rowIdx], rows: [...section.rows[rowIdx].rows] };
+      row.rows.splice(subIdx, 1);
+      section.rows[rowIdx] = row;
+      newData[secIdx] = section;
+      return newData;
+    });
+  };
+
   const updateSimpleRowField = (secIdx, rowIdx, field, value) => {
     setPricesData(prev => {
       const newData = [...prev];
@@ -702,11 +757,11 @@ export default function AdminPanel({ onExit }) {
                       return (
                         <div key={row.id || ri} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px', padding: '12px', background: row.enabled === false ? '#fff1f2' : '#fafafa', borderRadius: '8px', border: '1px solid #e2e8f0', opacity: row.enabled === false ? 0.7 : 1 }}>
                           <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 100px 100px 1fr', gap: '8px', alignItems: 'center' }}>
-                            <input type="checkbox" checked={row.enabled !== false} onChange={(e) => updateSimpleRowField(secIdx, ri, 'enabled', e.target.checked)} title="Активен" />
-                            <input value={row.name} onChange={(e) => updateSimpleRowField(secIdx, ri, 'name', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }} placeholder="Название" />
-                            <input value={row.price || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'price', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', textAlign: 'center' }} placeholder="Цена" />
-                            <input value={row.unit || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'unit', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} placeholder="Ед.изм." />
-                            <input value={row.note || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'note', e.target.value)} placeholder="Примечание" style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} />
+                            <input type=\"checkbox\" checked={row.enabled !== false} onChange={(e) => updateSimpleRowField(secIdx, ri, 'enabled', e.target.checked)} title=\"Активен\" />
+                            <input value={row.name} onChange={(e) => updateSimpleRowField(secIdx, ri, 'name', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }} placeholder=\"Название\" />
+                            <input value={row.price || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'price', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', textAlign: 'center' }} placeholder=\"Цена\" />
+                            <input value={row.unit || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'unit', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} placeholder=\"Ед.изм.\" />
+                            <input value={row.note || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'note', e.target.value)} placeholder=\"Примечание\" style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} />
                           </div>
                           <div style={{ overflowX: 'auto', marginTop: '4px' }}>
                             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
@@ -720,6 +775,7 @@ export default function AdminPanel({ onExit }) {
                                   <th style={{ border: '1px solid #cbd5e1', padding: '4px', width: '60px' }}>Ель шт.</th>
                                   <th style={{ border: '1px solid #cbd5e1', padding: '4px', width: '70px' }}>Лист. м³</th>
                                   <th style={{ border: '1px solid #cbd5e1', padding: '4px', width: '60px' }}>Лист. шт.</th>
+                                  <th style={{ border: '1px solid #cbd5e1', padding: '4px', width: '30px' }}></th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -730,15 +786,20 @@ export default function AdminPanel({ onExit }) {
                                         <td colSpan={8} style={{ border: '1px solid #cbd5e1', padding: '4px', fontWeight: 'bold', textAlign: 'center' }}>
                                           <input value={sub.label} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 'label', e.target.value)} style={{ width: '60px', textAlign: 'center', border: 'none', background: 'transparent', color: '#fff', fontWeight: 'bold' }} />
                                         </td>
+                                        <td style={{ border: '1px solid #cbd5e1', textAlign: 'center' }}>
+                                          <button onClick={() => removeComplexSubRow(secIdx, ri, si)} style={{ color: '#fff', border: 'none', background: 'none', cursor: 'pointer' }}>✕</button>
+                                        </td>
                                       </tr>
                                     );
                                   }
                                   return (
                                     <tr key={si} style={{ opacity: sub.enabled === false ? 0.45 : 1, background: sub.enabled === false ? '#fff1f2' : 'transparent' }}>
                                       <td style={{ border: '1px solid #cbd5e1', padding: '2px', textAlign: 'center' }}>
-                                        <input type="checkbox" checked={sub.enabled !== false} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 'enabled', e.target.checked)} style={{ margin: 0 }} title="Активен" />
+                                        <input type=\"checkbox\" checked={sub.enabled !== false} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 'enabled', e.target.checked)} style={{ margin: 0 }} title=\"Активен\" />
                                       </td>
-                                      <td style={{ border: '1px solid #cbd5e1', padding: '2px', textAlign: 'center' }}>{sub.n}</td>
+                                      <td style={{ border: '1px solid #cbd5e1', padding: '2px', textAlign: 'center' }}>
+                                        <input value={sub.n} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 'n', e.target.value)} style={{ width: '100%', border: 'none', textAlign: 'center', fontSize: '11px', background: 'transparent' }} />
+                                      </td>
                                       <td style={{ border: '1px solid #cbd5e1', padding: '0' }}>
                                         <input value={sub.name} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 'name', e.target.value)} style={{ width: '100%', border: 'none', fontSize: '11px', padding: '4px' }} />
                                       </td>
@@ -757,11 +818,18 @@ export default function AdminPanel({ onExit }) {
                                       <td style={{ border: '1px solid #cbd5e1', padding: '0' }}>
                                         <input value={sub.l_p || ''} onChange={(e) => updateComplexSubRow(secIdx, ri, si, 'l_p', e.target.value)} style={{ width: '100%', border: 'none', textAlign: 'center', fontSize: '11px', padding: '4px' }} />
                                       </td>
+                                      <td style={{ border: '1px solid #cbd5e1', textAlign: 'center' }}>
+                                        <button onClick={() => removeComplexSubRow(secIdx, ri, si)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>✕</button>
+                                      </td>
                                     </tr>
                                   );
                                 })}
                               </tbody>
                             </table>
+                            <div style={{ marginTop: '8px', display: 'flex', gap: '8px' }}>
+                              <button onClick={() => addComplexSubRow(secIdx, ri)} style={{ padding: '4px 10px', fontSize: '10px', cursor: 'pointer', border: '1px dashed #FF6B00', borderRadius: '4px', background: 'none', color: '#FF6B00' }}>+ Добавить строку</button>
+                              <button onClick={() => addComplexSubGroup(secIdx, ri)} style={{ padding: '4px 10px', fontSize: '10px', cursor: 'pointer', border: '1px dashed #FF6B00', borderRadius: '4px', background: 'none', color: '#FF6B00' }}>+ Добавить заголовок (4м/6м)</button>
+                            </div>
                           </div>
                         </div>
                       );
@@ -769,17 +837,17 @@ export default function AdminPanel({ onExit }) {
                     return (
                       <div key={row.id || ri} style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px', padding: '12px', background: row.enabled === false ? '#fff1f2' : '#fafafa', borderRadius: '8px', border: '1px solid #e2e8f0', opacity: row.enabled === false ? 0.7 : 1 }}>
                         <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr 100px 100px 1fr 30px', gap: '8px', alignItems: 'center' }}>
-                          <input type="checkbox" checked={row.enabled !== false} onChange={(e) => updateSimpleRowField(secIdx, ri, 'enabled', e.target.checked)} title="Активен" />
-                          <input value={row.name} onChange={(e) => updateSimpleRowField(secIdx, ri, 'name', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} placeholder="Название" />
-                          <input value={row.price || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'price', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', textAlign: 'center' }} placeholder="Цена" />
-                          <input value={row.unit || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'unit', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} placeholder="Ед.изм." />
-                          <input value={row.note || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'note', e.target.value)} placeholder="Примечание" style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} />
+                          <input type=\"checkbox\" checked={row.enabled !== false} onChange={(e) => updateSimpleRowField(secIdx, ri, 'enabled', e.target.checked)} title=\"Активен\" />
+                          <input value={row.name} onChange={(e) => updateSimpleRowField(secIdx, ri, 'name', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} placeholder=\"Название\" />
+                          <input value={row.price || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'price', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px', textAlign: 'center' }} placeholder=\"Цена\" />
+                          <input value={row.unit || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'unit', e.target.value)} style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} placeholder=\"Ед.изм.\" />
+                          <input value={row.note || ''} onChange={(e) => updateSimpleRowField(secIdx, ri, 'note', e.target.value)} placeholder=\"Примечание\" style={{ border: '1px solid #ddd', padding: '6px', borderRadius: '4px', fontSize: '12px' }} />
                           <button onClick={() => removeSimpleRow(secIdx, ri)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer' }}>✕</button>
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingLeft: '24px' }}>
                           <span style={{ fontSize: '11px', color: '#666' }}>Картинка:</span>
-                          {row.img && <img src={row.img.startsWith('http') ? row.img : `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/public/${row.img}`} alt="preview" style={{ width: '30px', height: '30px', objectFit: 'cover', borderRadius: '4px' }} />}
-                          <input type="file" accept="image/*" onChange={async (e) => {
+                          {row.img && <img src={row.img.startsWith('http') ? row.img : `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/public/${row.img}`} alt=\"preview\" style={{ width: '30px', height: '30px', objectFit: 'cover', borderRadius: '4px' }} />}
+                          <input type=\"file\" accept=\"image/*\" onChange={async (e) => {
                             if (!e.target.files[0]) return;
                             if (!tokenValid) { setShowTokenSettings(true); alert('Для загрузки фото нужен GitHub Token'); return; }
                             setLoading(true);
@@ -795,13 +863,12 @@ export default function AdminPanel({ onExit }) {
                   })}
                   <button onClick={() => addSimpleRow(secIdx)} style={{ marginTop: '10px', padding: '6px 14px', fontSize: '12px', cursor: 'pointer', border: '1px dashed #ccc', borderRadius: '4px', background: 'none' }}>+ Добавить строку</button>
                   {/* Примечания (footnotes) */}
-                  {((section.footnotes && section.footnotes.length > 0) || true) && (
-                    <div style={{ marginTop: '16px' }}>
+                  {((section.footnotes && section.footnotes.length > 0) || true) && (\n                    <div style={{ marginTop: '16px' }}>
                       <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '8px', color: '#666' }}>Примечания к таблице</label>
                       {(section.footnotes || []).map((fn, fnIdx) => (
                         <div key={fnIdx} style={{ display: 'flex', gap: '8px', marginBottom: '6px' }}>
                           <input
-                            type="text"
+                            type=\"text\"
                             value={fn}
                             onChange={(e) => updateFootnote(secIdx, fnIdx, e.target.value)}
                             style={{ flex: 1, padding: '6px', border: '1px solid #ddd', borderRadius: '4px', fontSize: '11px' }}
