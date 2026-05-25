@@ -63,56 +63,65 @@
           "desc": "Мешок 50 кг — 220 руб.",
           "name": "Песок",
           "price": "1 400 руб/м³",
-          "enabled": true
+          "enabled": true,
+          "img": "images/uploads/1779708654004-DSC00508.JPG"
         },
         {
           "id": "pesok-gost",
           "desc": "Для ответственных работ.",
           "name": "Песок ГОСТ 8736-2014",
           "price": "1 580 руб/м³",
-          "enabled": true
+          "enabled": true,
+          "img": "images/uploads/1779708523491-DSC01141.JPG"
         },
         {
           "id": "otsev",
           "desc": "Мешок 50 кг — 220 руб.",
           "name": "Отсев",
-          "price": "1 660 руб/м³"
+          "price": "1 660 руб/м³",
+          "img": "images/uploads/1779708744861-DSC00493.JPG"
         },
         {
           "id": "pgs",
           "desc": "Мешок 50 кг — 240 руб.",
           "name": "Песчано-гравийная смесь",
-          "price": "1 980 руб/м³"
+          "price": "1 980 руб/м³",
+          "img": "images/uploads/1779708870965-DSC01684.JPG"
         },
         {
           "id": "shcheben-5-20",
           "desc": "Мешок 50 кг — 300 руб.",
           "name": "Щебень 5-20 мм",
-          "price": "3 770 руб/м³"
+          "price": "3 770 руб/м³",
+          "img": "images/uploads/1779708306440-20260525_174946.jpg"
         },
         {
           "id": "shcheben-20-40",
           "desc": "Средняя фракция.",
           "name": "Щебень 20-40 мм",
-          "price": "3 340 руб/м³"
+          "price": "3 340 руб/м³",
+          "img": "images/uploads/1779708324666-20260525_175008.jpg"
         },
         {
           "id": "shcheben-40-70",
           "desc": "Крупная фракция.",
           "name": "Щебень 40-70 мм",
-          "price": "3 280 руб/м³"
+          "price": "3 280 руб/м³",
+          "img": "images/uploads/1779708602482-20161219_140213.jpg"
         },
         {
           "id": "slanets-kam",
           "desc": "Для отсыпки дорог.",
           "name": "Сланец каменистый",
-          "price": "1 400 руб/м³"
+          "price": "1 400 руб/м³",
+          "img": "images/uploads/1779708916261-DSC01663.JPG"
         },
         {
           "id": "smes-c5",
           "desc": "Для дорожного основания.",
           "name": "Смесь С5",
-          "price": "2 610 руб/м³"
+          "price": "2 610 руб/м³",
+          "img": "images/uploads/1779709037691-20160521_082432.jpg"
         }
       ],
       "isPrimary": false,
